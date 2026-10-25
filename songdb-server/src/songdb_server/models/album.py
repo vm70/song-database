@@ -19,7 +19,7 @@ class BaseAlbum(SQLModel):
 class AlbumCreateRequest(BaseAlbum):
     """Album creation request."""
 
-    artist_uuids: list[UUID] | None = None
+    artist_uuids: list[UUID]
 
 
 class Album(BaseAlbum, SongDBEntry[AlbumCreateRequest], table=True):

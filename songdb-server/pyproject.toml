@@ -1,0 +1,26 @@
+[project]
+name = "songdb-server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Vincent Mercator", email = "vmercator@protonmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.142.2",
+    "pydantic-settings>=2.15.0",
+    "pyjwt>=2.15.1",
+    "sqlmodel>=0.0.47",
+    "pwdlib[argon2]>=0.3.1",
+    "pymysql>=1.2.3",
+]
+
+[dependency-groups]
+
+[project.scripts]
+songdb-server = "songdb_server:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"

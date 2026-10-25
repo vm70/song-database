@@ -1,0 +1,70 @@
+[project]
+name = "song-database"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [{ name = "Vincent Mercator", email = "vmercator@protonmail.com" }]
+requires-python = ">=3.13"
+dependencies = [
+    "songdb-server",
+]
+
+[dependency-groups]
+dev = [
+    "black>=26.10.1",
+    "httpx2>=2.13.1",
+    "openapi-generator-cli>=7.26.0",
+    "pytest>=9.1.1",
+    "python-dateutil>=2.9.0.post0",
+    "urllib3>=2.8.0",
+]
+
+[tool.uv.sources]
+songdb-server = { workspace = true }
+
+[tool.uv.workspace]
+members = ["songdb-server"]
+
+[tool.ruff.lint]
+
+select = [
+    "FAST",  # FastAPI
+    "ANN",   # flake8-annotations
+    "ASYNC", # flake8-async
+    "S",     # flake8-bandit
+    "BLE",   # flake8-blind-except
+    "FBT",   # flake8-boolean-trap
+    "B",     # flake8-bugbear
+    "A",     # flake8-builtins
+    "EM",    # flake8-errmsg
+    "EXE",   # flake8-executable
+    "ISC",   # flake8-implicit-str-concat
+    "ICN",   # flake8-import-conventions
+    "LOG",   # flake8-logging
+    "G",     # flake8-logging-format
+    "RSE",   # flake8-raise
+    "RET",   # flake8-return
+    "SLF",   # flake8-self
+    "SIM",   # flake8-simplify
+    "PTH",   # flake8-use-pathlib
+    "I",     # isort
+    "C90",   # mccabe
+    "N",     # pep8-naming
+    "PERF",  # perflint
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "D",     # pydocstyle
+    "F",     # pyflakes
+    "PL",    # pylint
+    "RUF",   # ruff
+]
+
+ignore = [
+    "D202", 
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pyrefly]
+project-includes = ["**/*.py*", "**/*.ipynb"]

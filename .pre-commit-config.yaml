@@ -1,0 +1,28 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.10
+    hooks:
+      - id: ruff-check
+        name: Ruff (Check)
+        args: [--fix]
+      - id: ruff-format
+        name: Ruff (Format)
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.12.23
+    hooks:
+      - id: uv-lock
+        name: UV Sync lockfile
+  - repo: local
+    hooks:
+      - id: export-openapi-json
+        name: Export OpenAPI JSON
+        entry: "uv run songdb-server --export-openapi doc/generated/openapi.json"
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: generate-openapi-client
+        name: Generate OpenAPI Client
+        entry: "uv run openapi-generator-cli generate --input-spec doc/generated/openapi.json --generator-name python --minimal-update --output songdb-client"
+        language: system
+        types: [python]
+        pass_filenames: false

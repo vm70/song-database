@@ -137,9 +137,8 @@ async def deactivate_user(
     return response
 
 
-@users_router.get("")
+@users_router.get("", dependencies=[Depends(get_current_active_user)])
 def get_users(
-    current_active_user: CurrentActiveUserDep,
     session: SessionDep,
 ) -> UserListResponse:
     """Get the list of all current users."""

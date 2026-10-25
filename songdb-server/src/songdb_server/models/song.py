@@ -1,6 +1,6 @@
 """Song models."""
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Self
 from uuid import UUID
 
@@ -29,6 +29,15 @@ class Song(BaseSong, SongDBEntry[SongCreateRequest], table=True):
     """Song entry in the database."""
 
     @classmethod
-    def from_create_request(cls, create_request: SongCreateRequest) -> Self:
+    def from_create_request(
+        cls, creator_uuid: UUID, create_request: SongCreateRequest
+    ) -> Self:
         """Create a song entry from a song creation request."""
-        return cls(**create_request.model_dump(mode="python"))
+        creation_time = datetime.now(UTC)
+        return cls(
+            creator_uuid=creator_uuid,
+            created=creation_time,
+            modifier_uuid=creator_uuid,
+            modified=creation_time,
+            **create_request.model_dump(mode="python"),
+        )

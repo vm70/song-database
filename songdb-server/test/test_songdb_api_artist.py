@@ -10,6 +10,11 @@ from test_common import SongDBTestCase
 class TestSongDBArtist(SongDBTestCase):
     """Test creating & modifying artists."""
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.add_token_headers(cls)
+
     def test_create_artist(self) -> None:
         """Test creating an artist."""
         self.validate_api_call(

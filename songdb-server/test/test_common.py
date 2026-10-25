@@ -4,8 +4,11 @@ import os
 import unittest
 from typing import Any
 
+from fastapi import status
 from fastapi.testclient import TestClient
 from songdb_server.api.app import app
+from songdb_server.models.token import Token
+from songdb_server.models.user import UserCreateRequest, UserResponse
 from sqlmodel import SQLModel
 
 
@@ -13,6 +16,7 @@ class SongDBTestCase(unittest.TestCase):
     """Song DB test case."""
 
     client: TestClient
+    token: Token
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -22,6 +26,33 @@ class SongDBTestCase(unittest.TestCase):
         )
         cls.client = TestClient(app)
         cls.client.__enter__()
+
+        response = cls.client.post(
+            "/users",
+            json=UserCreateRequest(
+                username="test-user", password="password"
+            ).model_dump(mode="json"),
+        )
+        if response.status_code != status.HTTP_200_OK:
+            msg = "Could not create user for testing"
+            raise RuntimeError(msg)
+        UserResponse.model_validate(response.json())
+
+        response = cls.client.post(
+            "/users/token",
+            data={
+                "grant_type": "password",
+                "username": "test-user",
+                "password": "password",
+            },
+        )
+        if response.status_code != status.HTTP_200_OK:
+            msg = "Could not get token for testing"
+            raise RuntimeError(msg)
+        cls.token = Token.model_validate(response.json())
+
+    def add_token_headers(self) -> None:
+        self.client.headers = {"Authorization": f"Bearer {self.token.access_token}"}
 
     @classmethod
     def tearDownClass(cls) -> None:

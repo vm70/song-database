@@ -1,4 +1,5 @@
 """Test user settings with the SongDB API."""
+
 # ruff: noqa: S106
 
 import unittest
@@ -18,7 +19,7 @@ class TestSongDBUser(SongDBTestCase):
         self.validate_api_call(
             "post",
             "/users",
-            UserCreateRequest(username="test-user", password="password"),
+            UserCreateRequest(username="creation-user", password="password"),
             status.HTTP_200_OK,
             UserResponse,
         )
@@ -28,7 +29,7 @@ class TestSongDBUser(SongDBTestCase):
             "/users/token",
             data={
                 "grant_type": "password",
-                "username": "test-user",
+                "username": "creation-user",
                 "password": "password",
             },
         )

@@ -28,28 +28,6 @@ def get_user(username: str, session: SessionDep) -> User | None:
     return session.scalars(select(User).filter_by(username=username)).first()
 
 
-@users_router.post("/token")
-async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    session: SessionDep,
-    oauth2_service: OAuth2ServiceDep,
-) -> Token:
-    """Get the login access token for the given user."""
-    user = oauth2_service.authenticate_user(
-        get_user(form_data.username, session), form_data.password
-    )
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token = oauth2_service.create_access_token(
-        data={"sub": user.username},
-    )
-    return Token(access_token=access_token, token_type="bearer")  # noqa: S106
-
-
 async def get_current_user(
     token: OAuth2BearerDep,
     session: SessionDep,
@@ -93,6 +71,31 @@ def get_current_active_user(
     return current_user
 
 
+CurrentActiveUserDep = Annotated[User, Depends(get_current_active_user)]
+
+
+@users_router.post("/token")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    session: SessionDep,
+    oauth2_service: OAuth2ServiceDep,
+) -> Token:
+    """Get the login access token for the given user."""
+    user = oauth2_service.authenticate_user(
+        get_user(form_data.username, session), form_data.password
+    )
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = oauth2_service.create_access_token(
+        data={"sub": user.username},
+    )
+    return Token(access_token=access_token, token_type="bearer")  # noqa: S106
+
+
 @users_router.post("")
 def add_user(
     user_in: UserCreateRequest,
@@ -116,9 +119,7 @@ def add_user(
 
 
 @users_router.get("/me")
-async def get_user_info(
-    current_active_user: Annotated[User, Depends(get_current_active_user)],
-) -> UserResponse:
+async def get_user_info(current_active_user: CurrentActiveUserDep) -> UserResponse:
     """Get information about the current user."""
     return UserResponse(
         username=current_active_user.username, is_active=current_active_user.is_active
@@ -126,9 +127,8 @@ async def get_user_info(
 
 
 @users_router.delete("/me")
-async def delete_user(
-    current_active_user: Annotated[User, Depends(get_current_active_user)],
-    session: SessionDep,
+async def deactivate_user(
+    current_active_user: CurrentActiveUserDep, session: SessionDep
 ) -> UserResponse:
     """Deactivate the current user."""
     current_active_user.is_active = False
@@ -139,7 +139,7 @@ async def delete_user(
 
 @users_router.get("")
 def get_users(
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_active_user: CurrentActiveUserDep,
     session: SessionDep,
 ) -> UserListResponse:
     """Get the list of all current users."""

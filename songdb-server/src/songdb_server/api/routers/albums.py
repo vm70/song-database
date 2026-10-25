@@ -2,6 +2,7 @@
 
 from fastapi import HTTPException, status
 from fastapi.routing import APIRouter
+from songdb_server.api.routers.users import CurrentActiveUserDep
 from songdb_server.api.services.database import SessionDep
 from songdb_server.models.album import Album, AlbumCreateRequest
 from songdb_server.models.album_artist import AlbumArtist
@@ -11,9 +12,14 @@ albums_router = APIRouter(prefix="/albums", tags=["albums"])
 
 
 @albums_router.post("")
-def add_album(album_in: AlbumCreateRequest, session: SessionDep) -> Album:
+def add_album(
+    current_active_user: CurrentActiveUserDep,
+    album_in: AlbumCreateRequest,
+    session: SessionDep,
+) -> Album:
     """Add an album."""
-    album = Album.from_create_request(album_in)
+
+    album = Album.from_create_request(current_active_user.uuid, album_in)
 
     for artist_uuid in album_in.artist_uuids:
         artist = session.get(Artist, artist_uuid)

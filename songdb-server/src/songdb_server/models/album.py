@@ -38,3 +38,9 @@ class Album(BaseAlbum, SongDBEntry[AlbumCreateRequest], table=True):
             modified=creation_time,
             **create_request.model_dump(mode="python"),
         )
+
+
+class AlbumListResponse(SQLModel):
+    """A list of artists."""
+
+    albums: list[Album]

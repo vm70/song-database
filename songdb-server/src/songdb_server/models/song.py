@@ -41,3 +41,9 @@ class Song(BaseSong, SongDBEntry[SongCreateRequest], table=True):
             modified=creation_time,
             **create_request.model_dump(mode="python"),
         )
+
+
+class SongListResponse(SQLModel):
+    """A list of songs."""
+
+    songs: list[Song]

@@ -21,6 +21,8 @@ services:
       - db
 
   songdb-server:
+    profiles:
+      - app
     build:
       context: ./songdb-server
       dockerfile: Dockerfile
@@ -31,6 +33,24 @@ services:
     env_file:
       - .env
 
+  test:
+    profiles:
+      - test
+    build:
+      context: ./songdb-server
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    env_file:
+      - .env
+    entrypoint: "/bin/bash"
+    command:
+      - -c
+      - |
+        pip install pytest
+        pytest .
 
 volumes:
   mariadb_data:

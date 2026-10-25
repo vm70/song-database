@@ -1,6 +1,5 @@
 """Test the Song database's OAuth2 service."""
 
-
 import time
 import unittest
 from uuid import uuid4

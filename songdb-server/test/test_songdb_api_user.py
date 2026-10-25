@@ -1,6 +1,5 @@
 """Test user settings with the SongDB API."""
 
-
 import unittest
 
 from fastapi import status

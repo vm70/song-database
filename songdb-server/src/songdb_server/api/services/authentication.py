@@ -22,7 +22,6 @@ class OAuth2Service:
 
     def __init__(self, settings: SongDBSettings) -> None:
         """Initialize the OAuth2 service."""
-
         if settings.AUTH.HASH_TYPE == "recommended":
             self.password_hash = PasswordHash.recommended()
 

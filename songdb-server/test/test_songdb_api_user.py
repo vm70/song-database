@@ -14,6 +14,7 @@ class TestSongDBUser(SongDBTestCase):
 
     def test_create_user(self) -> None:
         """Test creating & authenticating a user."""
+        # Create test user
         self.validate_api_call(
             "post",
             "/users",
@@ -21,6 +22,8 @@ class TestSongDBUser(SongDBTestCase):
             status.HTTP_200_OK,
             UserResponse,
         )
+
+        # Get API token
         response = self.client.post(
             "/users/token",
             data={
@@ -31,6 +34,8 @@ class TestSongDBUser(SongDBTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
         token = Token.model_validate(response.json())
+
+        # Get info about the current user
         self.validate_api_call(
             "get",
             "/users/me",
@@ -39,6 +44,8 @@ class TestSongDBUser(SongDBTestCase):
             UserResponse,
             headers={"Authorization": f"Bearer {token.access_token}"},
         )
+
+        # Deactivate the current user
         self.validate_api_call(
             "delete",
             "/users/me",
@@ -47,6 +54,8 @@ class TestSongDBUser(SongDBTestCase):
             None,
             headers={"Authorization": f"Bearer {token.access_token}"},
         )
+
+        # Try getting info about the current (deactivated) user
         self.validate_api_call(
             "get",
             "/users/me",

@@ -4,6 +4,7 @@ import unittest
 
 from fastapi import status
 from songdb_server.models.artist import Artist, ArtistCreateRequest
+
 from test_common import AuthenticatedSongDBTestCase
 
 

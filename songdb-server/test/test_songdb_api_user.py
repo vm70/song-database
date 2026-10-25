@@ -1,12 +1,12 @@
 """Test user settings with the SongDB API."""
 
-# ruff: noqa: S106
 
 import unittest
 
 from fastapi import status
 from songdb_server.models.token import Token
 from songdb_server.models.user import UserCreateRequest, UserResponse
+
 from test_common import SongDBTestCase
 
 

@@ -18,7 +18,6 @@ def add_album(
     session: SessionDep,
 ) -> Album:
     """Add an album."""
-
     album = Album.from_create_request(current_active_user.uuid, album_in)
 
     for artist_uuid in album_in.artist_uuids:

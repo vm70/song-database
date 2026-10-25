@@ -1,3 +1,5 @@
+"""Error model."""
+
 from pydantic import BaseModel
 
 

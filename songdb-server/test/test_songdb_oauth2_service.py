@@ -1,6 +1,5 @@
 """Test the Song database's OAuth2 service."""
 
-# ruff: noqa: S106
 
 import time
 import unittest

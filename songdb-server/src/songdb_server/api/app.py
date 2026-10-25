@@ -25,7 +25,7 @@ app.include_router(artists_router)
 app.include_router(users_router)
 
 
-@app.get("/settings")
+@app.get("/settings", tags=["settings"])
 def get_settings(request: Request) -> SongDBSettings:
     """Get the song database's settings."""
     return request.app.state.settings

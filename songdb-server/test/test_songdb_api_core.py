@@ -6,7 +6,7 @@ from fastapi import status
 from test_common import SongDBTestCase
 
 
-class TestSongDBApi(SongDBTestCase):
+class TestSongDBApiCore(SongDBTestCase):
     """Test core components of the SongDB API."""
 
     def test_docs(self) -> None:

@@ -6,16 +6,11 @@ from datetime import UTC, datetime
 from fastapi import status
 from songdb_server.models.album import Album, AlbumCreateRequest
 from songdb_server.models.artist import Artist, ArtistCreateRequest
-from test_common import SongDBTestCase
+from test_common import AuthenticatedSongDBTestCase
 
 
-class TestSongDBAlbum(SongDBTestCase):
+class TestSongDBAlbum(AuthenticatedSongDBTestCase):
     """Test creating & modifying albums."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        super().setUpClass()
-        cls.add_token_headers(cls)
 
     def test_create_album(self) -> None:
         """Test creating an album."""

@@ -6,16 +6,11 @@ from fastapi import status
 from songdb_server.models.album import Album, AlbumCreateRequest
 from songdb_server.models.artist import Artist, ArtistCreateRequest
 from songdb_server.models.song import Song, SongCreateRequest
-from test_common import SongDBTestCase
+from test_common import AuthenticatedSongDBTestCase
 
 
-class TestSongDBSong(SongDBTestCase):
+class TestSongDBSong(AuthenticatedSongDBTestCase):
     """Test creating & modifying songs."""
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        super().setUpClass()
-        cls.add_token_headers(cls)
 
     def test_create_song(self) -> None:
         """Test creating a song."""

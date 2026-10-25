@@ -12,14 +12,14 @@ HashType = Literal["recommended"]
 logger = logging.getLogger(__name__)
 
 
-def generate_secret_key() -> SecretStr:
-    """Generate a secret key for creating JWT tokens."""
+def default_secret_key() -> SecretStr:
+    """Function for generating a secret key for JWT token authentication."""
     logger.warning("No secret key provided. Generating secret key.")
     return SecretStr(secrets.token_hex(64))
 
 
-def generate_sqlalchemy_url() -> str:
-    """Generate a SQLAlchemy URL."""
+def default_sqlalchemy_url() -> str:
+    """Return the fallback SQLAlchemy URL that uses SQLite."""
     logger.warning("No SQLAlchemy URL provided. Using fallback SQLite database.")
     return "sqlite:///file:memdb1?mode=memory&cache=shared&uri=true"
 
@@ -28,7 +28,7 @@ class SongDBAuthSettings(BaseModel):
     """Song database authentication settings."""
 
     HASH_TYPE: HashType = "recommended"
-    SECRET_KEY: SecretStr = Field(default_factory=generate_secret_key)
+    SECRET_KEY: SecretStr = Field(default_factory=default_secret_key)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
@@ -43,5 +43,5 @@ class SongDBSettings(BaseSettings):
         extra="ignore",
     )
 
-    SQLALCHEMY_URL: str = Field(default_factory=generate_sqlalchemy_url)
+    SQLALCHEMY_URL: str = Field(default_factory=default_sqlalchemy_url)
     AUTH: SongDBAuthSettings = Field(default_factory=SongDBAuthSettings)

@@ -4,7 +4,7 @@ from fastapi.routing import APIRouter
 from songdb_server.api.services.database import SessionDep
 from songdb_server.models.song import Song, SongCreateRequest
 
-songs_router = APIRouter(prefix="/songs")
+songs_router = APIRouter(prefix="/songs", tags=["songs"])
 
 
 @songs_router.post("")

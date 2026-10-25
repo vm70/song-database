@@ -5,7 +5,7 @@ from songdb_server.api.services.database import SessionDep
 from songdb_server.models.artist import Artist, ArtistCreateRequest, ArtistListResponse
 from sqlmodel import select
 
-artists_router = APIRouter(prefix="/artists")
+artists_router = APIRouter(prefix="/artists", tags=["artists"])
 
 
 @artists_router.post("")

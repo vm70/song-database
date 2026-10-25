@@ -7,7 +7,7 @@ from songdb_server.models.album import Album, AlbumCreateRequest
 from songdb_server.models.album_artist import AlbumArtist
 from songdb_server.models.artist import Artist
 
-albums_router = APIRouter(prefix="/albums")
+albums_router = APIRouter(prefix="/albums", tags=["albums"])
 
 
 @albums_router.post("")

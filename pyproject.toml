@@ -5,9 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "Vincent Mercator", email = "vmercator@protonmail.com" }]
 requires-python = ">=3.13"
-dependencies = [
-    "songdb-server",
-]
+dependencies = ["songdb-server"]
 
 [dependency-groups]
 dev = [
@@ -57,10 +55,6 @@ select = [
     "F",     # pyflakes
     "PL",    # pylint
     "RUF",   # ruff
-]
-
-ignore = [
-    "D202", 
 ]
 
 [tool.ruff.lint.pydocstyle]

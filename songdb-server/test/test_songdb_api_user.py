@@ -67,17 +67,20 @@ class TestSongDBUser(SongDBTestCase):
 
     def test_create_same_username(self) -> None:
         """Test creating 2 users with the same username won't work."""
+        duplicate_user = UserCreateRequest(
+            username="duplicate-user", password="duplicate-password"
+        )
         self.validate_api_call(
             "post",
             "/users",
-            UserCreateRequest(username="duplicate-user", password="duplicate-password"),
+            duplicate_user,
             status.HTTP_200_OK,
             UserResponse,
         )
         self.validate_api_call(
             "post",
             "/users",
-            UserCreateRequest(username="duplicate-user", password="duplicate-password"),
+            duplicate_user,
             status.HTTP_409_CONFLICT,
             None,
         )

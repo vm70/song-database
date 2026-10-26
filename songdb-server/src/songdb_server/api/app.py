@@ -4,14 +4,13 @@ import json
 from importlib.metadata import metadata
 from os import PathLike
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 
 from songdb_server.api.lifespan import lifespan
 from songdb_server.api.routers.albums import albums_router
 from songdb_server.api.routers.artists import artists_router
 from songdb_server.api.routers.songs import songs_router
 from songdb_server.api.routers.users import users_router
-from songdb_server.settings import SongDBSettings
 
 app = FastAPI(
     title="Song Database API",
@@ -23,12 +22,6 @@ app.include_router(songs_router)
 app.include_router(albums_router)
 app.include_router(artists_router)
 app.include_router(users_router)
-
-
-@app.get("/settings", tags=["settings"])
-def get_settings(request: Request) -> SongDBSettings:
-    """Get the song database's settings."""
-    return request.app.state.settings
 
 
 def export_openapi_json(path: PathLike) -> None:

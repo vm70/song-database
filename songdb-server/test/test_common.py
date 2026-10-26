@@ -1,6 +1,5 @@
 """Common utilities for unit tests."""
 
-import os
 import unittest
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -25,9 +24,6 @@ class SongDBTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the test case."""
-        os.environ["SONGDB__SQLALCHEMY_URL"] = (
-            "sqlite:///file:memdb1?mode=memory&cache=shared&uri=true"
-        )
         cls.client = TestClient(app)
         cls.client.__enter__()
 
@@ -85,8 +81,8 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
                 username="test-user", password="password"
             ).model_dump(mode="json"),
         )
-        if response.status_code != status.HTTP_200_OK:
-            msg = "Could not create user for testing"
+        if response.status_code not in (status.HTTP_200_OK, status.HTTP_409_CONFLICT):
+            msg = f"Could not create user for testing: error {response.status_code}"
             raise RuntimeError(msg)
         UserResponse.model_validate(response.json())
 

@@ -27,8 +27,6 @@ services:
       - db
 
   songdb-server:
-    # profiles:
-    #   - app
     build:
       context: ./songdb-server
       dockerfile: Dockerfile

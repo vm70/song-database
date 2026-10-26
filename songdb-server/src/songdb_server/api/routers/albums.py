@@ -57,8 +57,8 @@ def get_album(
 
 
 @albums_router.get("", dependencies=[Depends(get_current_active_user)])
-def get_artists(
+def get_albums(
     session: SessionDep,
 ) -> AlbumListResponse:
-    """Get all artists."""
+    """Get all albums."""
     return AlbumListResponse(albums=get_items(session, Album))

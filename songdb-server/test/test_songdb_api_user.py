@@ -51,17 +51,16 @@ class TestSongDBUser(SongDBTestCase):
             "/users/me",
             None,
             status.HTTP_200_OK,
-            None,
+            UserResponse,
             headers={"Authorization": f"Bearer {token.access_token}"},
         )
 
         # Try getting info about the current (deactivated) user
-        self.validate_api_call(
+        self.run_api_call(
             "get",
             "/users/me",
             None,
             status.HTTP_401_UNAUTHORIZED,
-            None,
             headers={"Authorization": f"Bearer {token.access_token}"},
         )
 
@@ -77,12 +76,11 @@ class TestSongDBUser(SongDBTestCase):
             status.HTTP_200_OK,
             UserResponse,
         )
-        self.validate_api_call(
+        self.run_api_call(
             "post",
             "/users",
             duplicate_user,
             status.HTTP_409_CONFLICT,
-            None,
         )
 
 

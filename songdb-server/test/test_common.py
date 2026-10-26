@@ -32,22 +32,35 @@ class SongDBTestCase(unittest.TestCase):
         """Tear down the test case."""
         cls.client.__exit__()
 
-    def validate_api_call[T: SQLModel](
+    def validate_api_call[M: SQLModel](
         self,
         method: str,
         url: str,
         input_model: SQLModel | None,
         status_code: int,
-        return_type: type[T] | None,
+        return_type: type[M],
         **kwargs: dict[str, Any],
-    ) -> T:
+    ) -> M:
         """Perform & validate an API call."""
         json = {} if input_model is None else input_model.model_dump(mode="json")
+        # pyrefly: ignore[bad-argument-type]
         response = self.client.request(method=method, url=url, json=json, **kwargs)
         self.assertEqual(response.status_code, status_code, response.json())
-        if return_type is not None:
-            return return_type.model_validate(response.json())
-        return None
+        return return_type.model_validate(response.json())
+
+    def run_api_call(
+        self,
+        method: str,
+        url: str,
+        input_model: SQLModel | None,
+        status_code: int,
+        **kwargs: dict[str, Any],
+    ) -> None:
+        """Perform an API call without return validation."""
+        json = {} if input_model is None else input_model.model_dump(mode="json")
+        # pyrefly: ignore[bad-argument-type]
+        response = self.client.request(method=method, url=url, json=json, **kwargs)
+        self.assertEqual(response.status_code, status_code, response.json())
 
 
 class AuthenticatedSongDBTestCase(SongDBTestCase):

@@ -15,7 +15,7 @@ class TestSongDBOAuth2Service(unittest.TestCase):
     """Test the Song database's OAuth2 service."""
 
     service: OAuth2Service
-    engine: Engine
+    engine: Engine | None
 
     @classmethod
     def setUpClass(cls) -> None:

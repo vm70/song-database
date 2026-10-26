@@ -42,6 +42,17 @@ class TestSongDBSong(AuthenticatedSongDBTestCase):
             SongListResponse,
         )
 
+    def test_get_song_album(self) -> None:
+        """Test fetching a song's parent album."""
+        queried_album = self.validate_api_call(
+            "get",
+            f"/songs/{self.song.uuid}/album",
+            None,
+            status.HTTP_200_OK,
+            Album,
+        )
+        self.assertEqual(queried_album.uuid, self.album.uuid)
+
 
 if __name__ == "__main__":
     unittest.main()

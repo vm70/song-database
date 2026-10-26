@@ -1,8 +1,7 @@
-services:
-  db:
+x-services:
+
+  db-common: &db-common
     image: mariadb
-    volumes:
-      - mariadb_data:/var/lib/mysql
     env_file:
       - .env
     environment:
@@ -17,24 +16,42 @@ services:
       retries: 3
       start_period: 30s
 
-  adminer:
-    image: adminer
-    ports:
-      - 8080:8080
-    depends_on:
-      - db
-
-  songdb-server:
+  songdb-server-common: &songdb-server-common
     build:
       context: ./songdb-server
       dockerfile: Dockerfile
     ports:
       - 8000:8000
-    depends_on:
-      db:
-        condition: service_healthy
     env_file:
       - .env
 
-volumes:
-  mariadb_data:
+services:
+  db:
+    <<: *db-common
+    profiles: [ "dev", "prod" ]
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  test-db:
+    <<: *db-common
+    profiles: [ "test" ]
+
+  songdb-server:
+    <<: *songdb-server-common
+    profiles: [ "dev", "prod" ]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  test:
+    <<: *songdb-server-common
+    profiles: [ "test" ]
+    build:
+      context: ./songdb-server
+      dockerfile: Dockerfile.test
+    environment:
+      SONGDB__SQLALCHEMY_URL: mariadb+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@test-db:3306/${MARIADB_DATABASE}?charset=utf8mb4
+    depends_on:
+      test-db:
+        restart: true
+        condition: service_healthy

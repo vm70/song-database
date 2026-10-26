@@ -30,7 +30,7 @@ def add_artist(
 
 
 @artists_router.get("/{artist_uuid}", dependencies=[Depends(get_current_active_user)])
-def get_album(
+def get_artist(
     artist_uuid: UUID,
     session: SessionDep,
 ) -> Artist:

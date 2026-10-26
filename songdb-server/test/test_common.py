@@ -4,6 +4,7 @@ import os
 import unittest
 from typing import Any
 
+from faker import Faker
 from fastapi import status
 from fastapi.testclient import TestClient
 from songdb_server.api.app import app
@@ -53,11 +54,13 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
     """Test case with an authenticated client."""
 
     token: Token
+    faker: Faker
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the test case."""
         super().setUpClass()
+        cls.faker = Faker()
 
         response = cls.client.post(
             "/users",

@@ -51,14 +51,16 @@ def get_artists(
     return ArtistListResponse(artists=get_items(session, Artist))
 
 
-@artists_router.patch("/{artist_uuid}", dependencies=[Depends(get_current_active_user)])
+@artists_router.patch("/{artist_uuid}")
 def patch_artist(
     session: SessionDep,
+    current_active_user: CurrentActiveUserDep,
     artist_uuid: UUID,
     artist_in: ArtistPatchRequest,
 ) -> Artist:
     """Modify an artist."""
     artist = get_item(session, Artist, artist_uuid)
-    artist.patch(artist_in)
+    artist.patch(current_active_user.uuid, artist_in)
     session.commit()
-    return get_item(session, Artist, artist_uuid)
+    session.refresh(artist)
+    return artist

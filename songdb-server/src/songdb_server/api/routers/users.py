@@ -132,9 +132,9 @@ async def deactivate_user(
 ) -> UserResponse:
     """Deactivate the current user."""
     current_active_user.is_active = False
-    response = UserResponse.from_db_entry(current_active_user)
     session.commit()
-    return response
+    session.refresh(current_active_user)
+    return UserResponse.from_db_entry(current_active_user)
 
 
 @users_router.get("", dependencies=[Depends(get_current_active_user)])

@@ -22,8 +22,17 @@ class AlbumCreateRequest(BaseAlbum):
     artist_uuids: list[UUID]
 
 
+class AlbumPatchRequest(SQLModel):
+    """Album patch request."""
+
+    pass
+
+
 class Album(
-    BaseAlbum, CreatedModifiedMixin, SongDBEntry[AlbumCreateRequest], table=True
+    BaseAlbum,
+    CreatedModifiedMixin,
+    SongDBEntry[AlbumCreateRequest, AlbumPatchRequest],
+    table=True,
 ):
     """Album entry in the song database."""
 

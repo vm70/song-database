@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, SQLModel
 
 
-class SongDBEntry[CR: SQLModel](SQLModel):
+class SongDBEntry[CR: SQLModel, PR: SQLModel](SQLModel):
     """An entry in the song database."""
 
     uuid: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -24,8 +24,13 @@ class SongDBEntry[CR: SQLModel](SQLModel):
         msg = "Not Implemented"
         raise NotImplementedError(msg)
 
-    def patch(self, patch_request: SQLModel) -> None:
-        """Modify this class from a given patch request."""
+    def patch(self, patcher_uuid: UUID, patch_request: PR) -> None:
+        """Modify this class from a given patch request.
+
+        Args:
+            patcher_uuid: UUID of the user who's patching this object
+            patch_request: corresponding patch request of this element
+        """
         for key, value in patch_request.model_dump().items():
             setattr(self, key, value or getattr(self, key))
 

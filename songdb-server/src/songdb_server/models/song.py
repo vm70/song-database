@@ -25,7 +25,18 @@ class SongCreateRequest(BaseSong):
     pass
 
 
-class Song(BaseSong, CreatedModifiedMixin, SongDBEntry[SongCreateRequest], table=True):
+class SongPatchRequest(SQLModel):
+    """Song patch request."""
+
+    pass
+
+
+class Song(
+    BaseSong,
+    CreatedModifiedMixin,
+    SongDBEntry[SongCreateRequest, SongPatchRequest],
+    table=True,
+):
     """Song entry in the database."""
 
     @classmethod

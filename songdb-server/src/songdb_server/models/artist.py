@@ -28,7 +28,10 @@ class ArtistPatchRequest(SQLModel):
 
 
 class Artist(
-    BaseArtist, CreatedModifiedMixin, SongDBEntry[ArtistCreateRequest], table=True
+    BaseArtist,
+    CreatedModifiedMixin,
+    SongDBEntry[ArtistCreateRequest, ArtistPatchRequest],
+    table=True,
 ):
     """An artist in the song database."""
 
@@ -45,6 +48,18 @@ class Artist(
             modified=creation_time,
             **create_request.model_dump(mode="python"),
         )
+
+    def patch(self, patcher_uuid: UUID, patch_request: ArtistPatchRequest) -> None:
+        """Modify this class from a given patch request.
+
+        Args:
+            patcher_uuid: UUID of the user who's patching this object
+            patch_request: corresponding patch request of this element
+        """
+        if not isinstance(patch_request, ArtistPatchRequest):
+            msg = f"Invalid type for patch request: {type(patch_request)}"
+            raise TypeError(msg)
+        super().patch(patcher_uuid, patch_request)
 
 
 class ArtistListResponse(SQLModel):

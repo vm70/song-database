@@ -3,7 +3,7 @@
 import unittest
 
 from fastapi import status
-from songdb_server.models.artist import Artist, ArtistListResponse
+from songdb_server.models.artist import Artist, ArtistListResponse, ArtistPatchRequest
 
 from test_common import AuthenticatedSongDBTestCase
 
@@ -35,6 +35,18 @@ class TestSongDBArtist(AuthenticatedSongDBTestCase):
             status.HTTP_200_OK,
             ArtistListResponse,
         )
+
+    def test_patch_artist(self) -> None:
+        """Test modifying an artist."""
+        new_name = self.faker.name()
+        new_artist = self.validate_api_call(
+            "patch",
+            f"/artists/{self.artist.uuid}",
+            ArtistPatchRequest(name=new_name),
+            status.HTTP_200_OK,
+            Artist,
+        )
+        self.assertEqual(new_artist.name, new_name)
 
 
 if __name__ == "__main__":

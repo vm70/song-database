@@ -24,6 +24,11 @@ class SongDBEntry[CR: SQLModel](SQLModel):
         msg = "Not Implemented"
         raise NotImplementedError(msg)
 
+    def patch(self, patch_request: SQLModel) -> None:
+        """Modify this class from a given patch request."""
+        for key, value in patch_request.model_dump().items():
+            setattr(self, key, value or getattr(self, key))
+
 
 class CreatedModifiedMixin(SQLModel):
     """Mixin class for storing who created or last modified an entry."""

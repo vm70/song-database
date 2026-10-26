@@ -10,7 +10,12 @@ from songdb_server.api.routers.users import (
     get_current_active_user,
 )
 from songdb_server.api.services.database import SessionDep
-from songdb_server.models.artist import Artist, ArtistCreateRequest, ArtistListResponse
+from songdb_server.models.artist import (
+    Artist,
+    ArtistCreateRequest,
+    ArtistListResponse,
+    ArtistPatchRequest,
+)
 
 artists_router = APIRouter(prefix="/artists", tags=["artists"])
 
@@ -44,3 +49,16 @@ def get_artists(
 ) -> ArtistListResponse:
     """Get all artists."""
     return ArtistListResponse(artists=get_items(session, Artist))
+
+
+@artists_router.patch("/{artist_uuid}", dependencies=[Depends(get_current_active_user)])
+def patch_artist(
+    session: SessionDep,
+    artist_uuid: UUID,
+    artist_in: ArtistPatchRequest,
+) -> Artist:
+    """Modify an artist."""
+    artist = get_item(session, Artist, artist_uuid)
+    artist.patch(artist_in)
+    session.commit()
+    return get_item(session, Artist, artist_uuid)

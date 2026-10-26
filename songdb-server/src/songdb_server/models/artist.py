@@ -21,6 +21,12 @@ class ArtistCreateRequest(BaseArtist):
     pass
 
 
+class ArtistPatchRequest(SQLModel):
+    """Artist patch request."""
+
+    name: str | None = None
+
+
 class Artist(
     BaseArtist, CreatedModifiedMixin, SongDBEntry[ArtistCreateRequest], table=True
 ):

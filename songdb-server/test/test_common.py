@@ -1,5 +1,6 @@
 """Common utilities for unit tests."""
 
+import secrets
 import unittest
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -12,7 +13,7 @@ from songdb_server.models.album import Album, AlbumCreateRequest
 from songdb_server.models.artist import Artist, ArtistCreateRequest
 from songdb_server.models.song import Song, SongCreateRequest
 from songdb_server.models.token import Token
-from songdb_server.models.user import UserCreateRequest, UserResponse
+from songdb_server.models.user import UserCreateRequest
 from sqlmodel import SQLModel
 
 
@@ -75,11 +76,13 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
         super().setUpClass()
         cls.faker = Faker()
 
+        username = f"test-user-{secrets.token_hex(8)}"
+
         response = cls.client.post(
             "/users",
-            json=UserCreateRequest(
-                username="test-user", password="password"
-            ).model_dump(mode="json"),
+            json=UserCreateRequest(username=username, password="password").model_dump(
+                mode="json"
+            ),
         )
         if response.status_code not in (status.HTTP_200_OK, status.HTTP_409_CONFLICT):
             msg = (
@@ -87,13 +90,12 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
                 + f"Error {response.status_code}: {response.json()}"
             )
             raise RuntimeError(msg)
-        UserResponse.model_validate(response.json())
 
         response = cls.client.post(
             "/users/token",
             data={
                 "grant_type": "password",
-                "username": "test-user",
+                "username": username,
                 "password": "password",
             },
         )

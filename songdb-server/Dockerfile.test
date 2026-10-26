@@ -9,4 +9,4 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install . faker pytest
 
 EXPOSE 8000
-CMD [ "fastapi", "run", "src/songdb_server/api/app.py" ]
+CMD [ "pytest", "." ]

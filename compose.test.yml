@@ -1,21 +1,29 @@
 services:
-  db:
-    image: mariadb
-    volumes:
 
-      !reset 
+  test-db:
+    image: mariadb
+    env_file:
+      - .env
+    environment:
+      MARIADB_USER: ${MARIADB_USER?}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD?}
+      MARIADB_DATABASE: ${MARIADB_DATABASE?}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD?}
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
   test:
     build:
       context: ./songdb-server
       dockerfile: Dockerfile.test
     depends_on:
-      db:
+      test-db:
         condition: service_healthy
     env_file:
       - .env
-    entrypoint: "/bin/bash"
-    command:
-      - -c
-      - |
-        pip install pytest
-        pytest .
+    environment:
+      SONGDB__SQLALCHEMY_URL: mariadb+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@test-db:3306/${MARIADB_DATABASE}?charset=utf8mb4

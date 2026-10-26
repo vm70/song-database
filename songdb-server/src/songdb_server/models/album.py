@@ -6,7 +6,7 @@ from uuid import UUID
 
 from sqlmodel import SQLModel
 
-from songdb_server.models._common import SongDBEntry
+from songdb_server.models._common import CreatedModifiedMixin, SongDBEntry
 
 
 class BaseAlbum(SQLModel):
@@ -22,7 +22,9 @@ class AlbumCreateRequest(BaseAlbum):
     artist_uuids: list[UUID]
 
 
-class Album(BaseAlbum, SongDBEntry[AlbumCreateRequest], table=True):
+class Album(
+    BaseAlbum, CreatedModifiedMixin, SongDBEntry[AlbumCreateRequest], table=True
+):
     """Album entry in the song database."""
 
     @classmethod

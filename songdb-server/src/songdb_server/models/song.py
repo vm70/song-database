@@ -7,7 +7,7 @@ from uuid import UUID
 from pydantic import NonNegativeInt
 from sqlmodel import Field, SQLModel
 
-from songdb_server.models._common import SongDBEntry
+from songdb_server.models._common import CreatedModifiedMixin, SongDBEntry
 
 
 class BaseSong(SQLModel):
@@ -25,7 +25,7 @@ class SongCreateRequest(BaseSong):
     pass
 
 
-class Song(BaseSong, SongDBEntry[SongCreateRequest], table=True):
+class Song(BaseSong, CreatedModifiedMixin, SongDBEntry[SongCreateRequest], table=True):
     """Song entry in the database."""
 
     @classmethod

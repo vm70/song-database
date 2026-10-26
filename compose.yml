@@ -12,6 +12,12 @@ services:
       MARIADB_PASSWORD: ${MARIADB_PASSWORD?}
       MARIADB_DATABASE: ${MARIADB_DATABASE?}
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD?}
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   adminer:
     image: adminer
@@ -29,9 +35,11 @@ services:
     ports:
       - 8000:8000
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
       - .env
+
   # test:
   #   profiles:
   #     - test

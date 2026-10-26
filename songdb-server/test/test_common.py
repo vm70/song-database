@@ -2,12 +2,16 @@
 
 import os
 import unittest
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from faker import Faker
 from fastapi import status
 from fastapi.testclient import TestClient
 from songdb_server.api.app import app
+from songdb_server.models.album import Album, AlbumCreateRequest
+from songdb_server.models.artist import Artist, ArtistCreateRequest
+from songdb_server.models.song import Song, SongCreateRequest
 from songdb_server.models.token import Token
 from songdb_server.models.user import UserCreateRequest, UserResponse
 from sqlmodel import SQLModel
@@ -100,3 +104,44 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
         cls.token = Token.model_validate(response.json())
 
         cls.client.headers = {"Authorization": f"Bearer {cls.token.access_token}"}
+
+    def new_artist(self) -> Artist:
+        return self.validate_api_call(
+            "post",
+            "/artists",
+            ArtistCreateRequest(name=self.faker.name()),
+            status.HTTP_200_OK,
+            Artist,
+        )
+
+    def new_album(self, artist: Artist | None = None) -> Album:
+        artist = artist or self.new_artist()
+        return self.validate_api_call(
+            "post",
+            "/albums",
+            AlbumCreateRequest(
+                title=f"{artist.name}'s album",
+                release_date=datetime.now(UTC),
+                artist_uuids=[artist.uuid],
+            ),
+            status.HTTP_200_OK,
+            Album,
+        )
+
+    def new_song(
+        self, artist: Artist | None = None, album: Album | None = None
+    ) -> Song:
+        artist = artist or self.new_artist()
+        album = album or self.new_album()
+        return self.validate_api_call(
+            "post",
+            "/songs",
+            SongCreateRequest(
+                title=f"{artist.name}'s song",
+                track_number=1,
+                duration=timedelta(minutes=1),
+                album_uuid=album.uuid,
+            ),
+            status.HTTP_200_OK,
+            Song,
+        )

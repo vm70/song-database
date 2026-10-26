@@ -3,7 +3,7 @@
 import unittest
 
 from fastapi import status
-from songdb_server.models.artist import Artist, ArtistCreateRequest, ArtistListResponse
+from songdb_server.models.artist import Artist, ArtistListResponse
 
 from test_common import AuthenticatedSongDBTestCase
 
@@ -13,14 +13,8 @@ class TestSongDBArtist(AuthenticatedSongDBTestCase):
 
     artist: Artist
 
-    def setUp(self):
-        self.artist = self.validate_api_call(
-            "post",
-            "/artists",
-            ArtistCreateRequest(name=self.faker.name()),
-            status.HTTP_200_OK,
-            Artist,
-        )
+    def setUp(self) -> None:
+        self.artist = self.new_artist()
 
     def test_get_artist(self) -> None:
         """Test fetching an artist."""
@@ -33,6 +27,7 @@ class TestSongDBArtist(AuthenticatedSongDBTestCase):
         )
 
     def test_get_artists(self) -> None:
+        """Test fetching all artists."""
         self.validate_api_call(
             "get",
             "/artists",

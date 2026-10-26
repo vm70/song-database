@@ -2,10 +2,9 @@
 
 from collections.abc import Sequence
 from typing import Self
+from uuid import UUID, uuid4
 
 from sqlmodel import Field, SQLModel
-
-from songdb_server.models._common import SongDBEntry
 
 
 class BaseUser(SQLModel):
@@ -20,8 +19,11 @@ class UserCreateRequest(BaseUser):
     password: str
 
 
-class User(BaseUser, SongDBEntry, table=True):
+class User(BaseUser, table=True):
     """User entry in the database."""
+
+    uuid: UUID = Field(default_factory=uuid4, primary_key=True)
+    """The UUID of the user."""
 
     is_active: bool = True
     hashed_password: str

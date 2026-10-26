@@ -1,42 +1,17 @@
 """Common classes & mixins in the song database."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Self
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, SQLModel
 
 
-class SongDBEntry[CR: SQLModel, PR: SQLModel](SQLModel):
-    """An entry in the song database."""
+class SongDBEntry[C: SQLModel, R: SQLModel](SQLModel):
+    """A non-user entry in the song database."""
 
     uuid: UUID = Field(default_factory=uuid4, primary_key=True)
     """The UUID of the database entry."""
-
-    @classmethod
-    def from_create_request(cls, creator_uuid: UUID, create_request: CR) -> Self:
-        """Create an entry from its corresponding creation request.
-
-        Args:
-            creator_uuid: UUID of the user who created this object
-            create_request: corresponding creation request of this element
-        """
-        msg = "Not Implemented"
-        raise NotImplementedError(msg)
-
-    def patch(self, patcher_uuid: UUID, patch_request: PR) -> None:
-        """Modify this class from a given patch request.
-
-        Args:
-            patcher_uuid: UUID of the user who's patching this object
-            patch_request: corresponding patch request of this element
-        """
-        for key, value in patch_request.model_dump().items():
-            setattr(self, key, value or getattr(self, key))
-
-
-class CreatedModifiedMixin(SQLModel):
-    """Mixin class for storing who created or last modified an entry."""
 
     creator_uuid: UUID = Field(foreign_key="user.uuid")
     """UUID of who created the database entry."""
@@ -46,3 +21,32 @@ class CreatedModifiedMixin(SQLModel):
     """UUID of who last modified the database entry."""
     modified: datetime
     """Modification timestamp."""
+
+    @classmethod
+    def from_create_request(cls, create_request: C, creator_uuid: UUID) -> Self:
+        """Create this entry from its corresponding creation request.
+
+        Args:
+            create_request: creation request
+            creator_uuid: UUID of the user who created this object
+        """
+        creation_time = datetime.now(UTC)
+        return cls(
+            creator_uuid=creator_uuid,
+            created=creation_time,
+            modifier_uuid=creator_uuid,
+            modified=creation_time,
+            **create_request.model_dump(mode="python"),
+        )
+
+    def patch(self, patch_request: R, modifier_uuid: UUID) -> None:
+        """Modify this class from a given patch request.
+
+        Args:
+            patch_request: corresponding patch request of this element
+            modifier_uuid: UUID of the user who's patching this object
+        """
+        self.modified = datetime.now(UTC)
+        self.modifier_uuid = modifier_uuid
+        for key, value in patch_request.model_dump().items():
+            setattr(self, key, value or getattr(self, key))

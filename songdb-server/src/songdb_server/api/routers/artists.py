@@ -27,7 +27,7 @@ def add_artist(
     session: SessionDep,
 ) -> Artist:
     """Add an artist."""
-    artist = Artist.from_create_request(current_active_user.uuid, artist_in)
+    artist = Artist.from_create_request(artist_in, current_active_user.uuid)
     session.add(artist)
     session.commit()
     session.refresh(artist)
@@ -60,7 +60,7 @@ def patch_artist(
 ) -> Artist:
     """Modify an artist."""
     artist = get_item(session, Artist, artist_uuid)
-    artist.patch(current_active_user.uuid, artist_in)
+    artist.patch(artist_in, current_active_user.uuid)
     session.commit()
     session.refresh(artist)
     return artist

@@ -1,12 +1,11 @@
 """Album models."""
 
-from datetime import UTC, datetime
-from typing import Self
+from datetime import datetime
 from uuid import UUID
 
 from sqlmodel import SQLModel
 
-from songdb_server.models._common import CreatedModifiedMixin, SongDBEntry
+from songdb_server.models._common import SongDBEntry
 
 
 class BaseAlbum(SQLModel):
@@ -30,25 +29,12 @@ class AlbumPatchRequest(SQLModel):
 
 class Album(
     BaseAlbum,
-    CreatedModifiedMixin,
     SongDBEntry[AlbumCreateRequest, AlbumPatchRequest],
     table=True,
 ):
     """Album entry in the song database."""
 
-    @classmethod
-    def from_create_request(
-        cls, creator_uuid: UUID, create_request: AlbumCreateRequest
-    ) -> Self:
-        """Create an album from an album creation request."""
-        creation_time = datetime.now(UTC)
-        return cls(
-            creator_uuid=creator_uuid,
-            created=creation_time,
-            modifier_uuid=creator_uuid,
-            modified=creation_time,
-            **create_request.model_dump(mode="python"),
-        )
+    pass
 
 
 class AlbumListResponse(SQLModel):

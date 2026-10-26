@@ -24,7 +24,7 @@ def add_album(
     session: SessionDep,
 ) -> Album:
     """Add an album."""
-    album = Album.from_create_request(current_active_user.uuid, album_in)
+    album = Album.from_create_request(album_in, current_active_user.uuid)
 
     for artist_uuid in album_in.artist_uuids:
         artist = session.get(Artist, artist_uuid)
@@ -36,8 +36,12 @@ def add_album(
             )
         session.add(
             AlbumArtist(
+                creator_uuid=album.creator_uuid,
+                created=album.created,
+                modifier_uuid=album.modifier_uuid,
+                modified=album.modified,
                 album_uuid=album.uuid,
-                artist_uuid=artist.uuid,
+                artist_uuid=artist_uuid,
             )
         )
 

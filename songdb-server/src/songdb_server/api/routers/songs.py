@@ -23,7 +23,7 @@ def add_song(
     session: SessionDep,
 ) -> Song:
     """Add a song."""
-    song = Song.from_create_request(current_active_user.uuid, song_in)
+    song = Song.from_create_request(song_in, current_active_user.uuid)
     session.add(song)
     session.commit()
     session.refresh(song)

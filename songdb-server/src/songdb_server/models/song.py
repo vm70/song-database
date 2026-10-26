@@ -1,13 +1,12 @@
 """Song models."""
 
-from datetime import UTC, datetime, timedelta
-from typing import Self
+from datetime import timedelta
 from uuid import UUID
 
 from pydantic import NonNegativeInt
 from sqlmodel import Field, SQLModel
 
-from songdb_server.models._common import CreatedModifiedMixin, SongDBEntry
+from songdb_server.models._common import SongDBEntry
 
 
 class BaseSong(SQLModel):
@@ -33,25 +32,10 @@ class SongPatchRequest(SQLModel):
 
 class Song(
     BaseSong,
-    CreatedModifiedMixin,
     SongDBEntry[SongCreateRequest, SongPatchRequest],
     table=True,
 ):
     """Song entry in the database."""
-
-    @classmethod
-    def from_create_request(
-        cls, creator_uuid: UUID, create_request: SongCreateRequest
-    ) -> Self:
-        """Create a song entry from a song creation request."""
-        creation_time = datetime.now(UTC)
-        return cls(
-            creator_uuid=creator_uuid,
-            created=creation_time,
-            modifier_uuid=creator_uuid,
-            modified=creation_time,
-            **create_request.model_dump(mode="python"),
-        )
 
 
 class SongListResponse(SQLModel):

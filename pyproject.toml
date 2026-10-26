@@ -10,6 +10,7 @@ dependencies = ["songdb-server"]
 [dependency-groups]
 dev = [
     "black>=26.10.1",
+    "faker>=40.43.0",
     "httpx2>=2.13.1",
     "openapi-generator-cli>=7.26.0",
     "pytest>=9.1.1",

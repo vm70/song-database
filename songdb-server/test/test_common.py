@@ -82,7 +82,10 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
             ).model_dump(mode="json"),
         )
         if response.status_code not in (status.HTTP_200_OK, status.HTTP_409_CONFLICT):
-            msg = f"Could not create user for testing: error {response.status_code}"
+            msg = (
+                "Could not create test user for unit tests. "
+                + f"Error {response.status_code}: {response.json()}"
+            )
             raise RuntimeError(msg)
         UserResponse.model_validate(response.json())
 

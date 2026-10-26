@@ -29,6 +29,10 @@ class CreatedModifiedMixin(SQLModel):
     """Mixin class for storing who created or last modified an entry."""
 
     creator_uuid: UUID = Field(foreign_key="user.uuid")
+    """UUID of who created the database entry."""
     created: datetime
+    """Creation timestamp."""
     modifier_uuid: UUID = Field(foreign_key="user.uuid")
+    """UUID of who last modified the database entry."""
     modified: datetime
+    """Modification timestamp."""

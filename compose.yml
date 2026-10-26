@@ -28,30 +28,32 @@ x-services:
 services:
   db:
     <<: *db-common
-    profiles: [ "dev", "prod" ]
+    profiles: [ "app" ]
     volumes:
       - mariadb_data:/var/lib/mysql
+
+  songdb-server:
+    <<: *songdb-server-common
+    profiles: [ "app" ]
+    depends_on:
+      db:
+        condition: service_healthy
 
   test-db:
     <<: *db-common
     profiles: [ "test" ]
 
-  songdb-server:
-    <<: *songdb-server-common
-    profiles: [ "dev", "prod" ]
-    depends_on:
-      db:
-        condition: service_healthy
-
   test:
     <<: *songdb-server-common
     profiles: [ "test" ]
-    build:
-      context: ./songdb-server
-      dockerfile: Dockerfile.test
     environment:
+      _PIP_ADDITIONAL_REQUIREMENTS: "faker pytest"
       SONGDB__SQLALCHEMY_URL: mariadb+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@test-db:3306/${MARIADB_DATABASE}?charset=utf8mb4
     depends_on:
       test-db:
         restart: true
         condition: service_healthy
+    command: [ "pytest", "." ]
+
+volumes:
+  mariadb_data:

@@ -2,15 +2,15 @@
 
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.routing import APIRouter
+from songdb_server.api.routers._common import get_item, get_items
 from songdb_server.api.routers.users import (
     CurrentActiveUserDep,
     get_current_active_user,
 )
 from songdb_server.api.services.database import SessionDep
 from songdb_server.models.artist import Artist, ArtistCreateRequest, ArtistListResponse
-from sqlmodel import select
 
 artists_router = APIRouter(prefix="/artists", tags=["artists"])
 
@@ -35,13 +35,7 @@ def get_artist(
     session: SessionDep,
 ) -> Artist:
     """Get an album."""
-    artist = session.get(Artist, artist_uuid)
-    if artist is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Could not find album with UUID {artist_uuid}",
-        )
-    return artist
+    return get_item(session, Artist, artist_uuid)
 
 
 @artists_router.get("", dependencies=[Depends(get_current_active_user)])
@@ -49,4 +43,4 @@ def get_artists(
     session: SessionDep,
 ) -> ArtistListResponse:
     """Get all artists."""
-    return ArtistListResponse(artists=session.exec(select(Artist)).all())
+    return ArtistListResponse(artists=get_items(session, Artist))

@@ -121,9 +121,7 @@ def add_user(
 @users_router.get("/me")
 async def get_user_info(current_active_user: CurrentActiveUserDep) -> UserResponse:
     """Get information about the current user."""
-    return UserResponse(
-        username=current_active_user.username, is_active=current_active_user.is_active
-    )
+    return UserResponse.from_db_entry(current_active_user)
 
 
 @users_router.delete("/me")

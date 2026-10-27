@@ -32,6 +32,8 @@ class User(BaseUser, table=True):
 class UserResponse(BaseUser):
     """Public information about a user."""
 
+    uuid: UUID
+    """The UUID of the user."""
     is_active: bool = True
 
     @classmethod

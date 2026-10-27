@@ -66,18 +66,25 @@ class SongDBTestCase(unittest.TestCase):
 class AuthenticatedSongDBTestCase(SongDBTestCase):
     """Test case with an authenticated client."""
 
-    user: UserCreateRequest = UserCreateRequest(
-        username="test-user", password="password"
-    )
     token: Token
     fake: Faker
 
     @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the test case."""
+        super().setUpClass()
+        cls.fake = Faker()
+        cls.login()
+
+    @classmethod
     def login(cls):
-        response = cls.client.post("/users", json=cls.user.model_dump(mode="json"))
+        user = UserCreateRequest(
+            username=cls.fake.user_name(), password=cls.fake.password()
+        )
+        response = cls.client.post("/users", json=user.model_dump(mode="json"))
         if response.status_code not in (status.HTTP_200_OK, status.HTTP_409_CONFLICT):
             msg = (
-                f"Could not create test user {cls.user.username} for unit tests."
+                f"Could not create test user {user.username} for unit tests."
                 + f"Error {response.status_code}: {response.json()}"
             )
             raise RuntimeError(msg)
@@ -86,8 +93,8 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
             "/users/token",
             data={
                 "grant_type": "password",
-                "username": cls.user.username,
-                "password": cls.user.password,
+                "username": user.username,
+                "password": user.password,
             },
         )
         if response.status_code != status.HTTP_200_OK:
@@ -95,13 +102,6 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
             raise RuntimeError(msg)
         cls.token = Token.model_validate(response.json())
         cls.client.headers = {"Authorization": f"Bearer {cls.token.access_token}"}
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Set up the test case."""
-        super().setUpClass()
-        cls.login()
-        cls.fake = Faker()
 
     def new_artist(self) -> Artist:
         return self.validate_api_call(

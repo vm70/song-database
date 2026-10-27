@@ -53,7 +53,7 @@ class TestSongDBArtist(AuthenticatedSongDBTestCase):
             status.HTTP_200_OK,
             UserResponse,
         )
-        self.login()
+        self.login_as_new_user()
         new_user = self.validate_api_call(
             "get",
             "/users/me",

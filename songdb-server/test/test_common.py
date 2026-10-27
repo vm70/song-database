@@ -67,17 +67,16 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
     """Test case with an authenticated client."""
 
     token: Token
-    fake: Faker
+    fake: Faker = Faker()
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the test case."""
         super().setUpClass()
-        cls.fake = Faker()
-        cls.login()
+        cls.login_as_new_user()
 
     @classmethod
-    def login(cls):
+    def login_as_new_user(cls):
         user = UserCreateRequest(
             username=cls.fake.user_name(), password=cls.fake.password()
         )

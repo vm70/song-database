@@ -25,6 +25,11 @@ class TestSongDBOAuth2Service(unittest.TestCase):
         cls.service = OAuth2Service(settings)
         cls.engine = init_engine(settings)
 
+    @classmethod
+    def tearDownClass(cls) -> None:
+        if cls.engine is not None:
+            cls.engine.dispose()
+
     def test_authenticate_user(self) -> None:
         """Test the time to fake user authentication."""
         test_user = User(

@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import Depends
 from fastapi.routing import APIRouter
-from songdb_server.api.routers._common import get_item, get_items
+from songdb_server.api.routers._common import get_item, get_items, patch_item
 from songdb_server.api.routers.users import (
     CurrentActiveUserDep,
     get_current_active_user,
@@ -59,8 +59,4 @@ def patch_artist(
     artist_in: ArtistPatchRequest,
 ) -> Artist:
     """Modify an artist."""
-    artist = get_item(session, Artist, artist_uuid)
-    artist.patch(artist_in, current_active_user.uuid)
-    session.commit()
-    session.refresh(artist)
-    return artist
+    return patch_item(session, Artist, artist_uuid, artist_in, current_active_user.uuid)

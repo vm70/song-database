@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, SQLModel
 
 
-class SongDBEntry[C: SQLModel, R: SQLModel](SQLModel):
+class SongDBEntry[C: SQLModel, P: SQLModel](SQLModel):
     """A non-user entry in the song database."""
 
     uuid: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -39,7 +39,7 @@ class SongDBEntry[C: SQLModel, R: SQLModel](SQLModel):
             **create_request.model_dump(mode="python"),
         )
 
-    def patch(self, patch_request: R, modifier_uuid: UUID) -> None:
+    def patch(self, patch_request: P, modifier_uuid: UUID) -> None:
         """Modify this class from a given patch request.
 
         Args:

@@ -38,7 +38,7 @@ class TestSongDBArtist(AuthenticatedSongDBTestCase):
 
     def test_patch_artist(self) -> None:
         """Test modifying an artist."""
-        new_name = self.faker.name()
+        new_name = self.fake.name()
         new_artist = self.validate_api_call(
             "patch",
             f"/artists/{self.artist.uuid}",

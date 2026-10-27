@@ -70,7 +70,7 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
         username="test-user", password="password"
     )
     token: Token
-    faker: Faker
+    fake: Faker
 
     @classmethod
     def login(cls):
@@ -101,13 +101,13 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
         """Set up the test case."""
         super().setUpClass()
         cls.login()
-        cls.faker = Faker()
+        cls.fake = Faker()
 
     def new_artist(self) -> Artist:
         return self.validate_api_call(
             "post",
             "/artists",
-            ArtistCreateRequest(name=self.faker.name()),
+            ArtistCreateRequest(name=self.fake.name()),
             status.HTTP_200_OK,
             Artist,
         )

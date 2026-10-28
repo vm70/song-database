@@ -11,3 +11,9 @@ Note that this repository is just a toy example, and should not be used in produ
 podman compose --profile test up --abort-on-container-exit
 podman compose --profile test down
 ```
+
+## Client Generation
+
+```bash
+uv run openapi-generator-cli generate --input-spec doc/generated/openapi.json --generator-name python --minimal-update --output songdb-client
+```

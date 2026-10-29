@@ -4,6 +4,15 @@ x-services:
     image: mariadb
     env_file:
       - .env
+    environment:
+      MARIADB_USER: ${MARIADB_USER?}
+      MARIADB_PASSWORD: null
+      MARIADB_PASSWORD_FILE: /run/secrets/songdb-mariadb-password
+      MARIADB_DATABASE: ${MARIADB_DATABASE?}
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
+    secrets:
+      - songdb-mariadb-password
+      - songdb-mariadb-root-password
     healthcheck:
       test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       interval: 10s
@@ -19,6 +28,8 @@ x-services:
       - 8000:8000
     env_file:
       - .env
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
 
 services:
   mariadb:
@@ -26,30 +37,46 @@ services:
     profiles: [ "" ]
     volumes:
       - mariadb_data:/var/lib/mysql
-  
-  test-db:
-    <<: *mariadb-common
-    profiles: [ "test" ]
 
-  songdb-server:
-    <<: *songdb-server-common
-    profiles: [ "" ]
+  adminer:
+    profiles: [ "", "debug" ]
+    image: adminer
+    ports:
+      - 8080:8080
     depends_on:
-      db:
+      mariadb:
         condition: service_healthy
+  # test-db:
+  #   <<: *mariadb-common
+  #   profiles: [ "test" ]
 
-  test:
-    <<: *songdb-server-common
-    profiles: [ "test" ]
-    build:
-      context: ./songdb-server
-      dockerfile: Dockerfile.test
-    depends_on:
-      test-db:
-        restart: true
-        condition: service_healthy
-    environment:
-      SONGDB__SQLALCHEMY_URL: mariadb+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@test-mariadb:3306/${MARIADB_DATABASE}?charset=utf8mb4
+  # songdb-server:
+  #   <<: *songdb-server-common
+  #   profiles: [ "" ]
+  #   depends_on:
+  #     mariadb:
+  #       condition: service_healthy
+
+  # test:
+  #   <<: *songdb-server-common
+  #   profiles: [ "test" ]
+  #   build:
+  #     context: ./songdb-server
+  #     dockerfile: Dockerfile.test
+  #   depends_on:
+  #     test-mariadb:
+  #       restart: true
+  #       condition: service_healthy
+  #   environment:
+  #     SONGDB__SQLALCHEMY_URL: mariadb+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@test-mariadb:3306/${MARIADB_DATABASE}?charset=utf8mb4
 
 volumes:
   mariadb_data:
+
+secrets:
+  songdb-auth-secret-key:
+    file: ./secrets/songdb-auth-secret-key
+  songdb-mariadb-password:
+    file: ./secrets/songdb-mariadb-password
+  songdb-mariadb-root-password:
+    file: ./secrets/songdb-mariadb-root-password

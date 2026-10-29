@@ -62,10 +62,12 @@ class SQLSettings(BaseModel):
 
     URL: AnyUrl | None = None
 
+    _password: SecretStr
+
     @model_validator(mode="after")
     def consolidate_password(self) -> Self:
         """Consolidate SQL password and SQL password file into `self.PASSWORD`."""
-        self.PASSWORD = consolidate_secret(
+        self._password = consolidate_secret(
             self.PASSWORD,
             self.PASSWORD_FILE,
             "Neither SQL password nor password file provided",
@@ -75,15 +77,12 @@ class SQLSettings(BaseModel):
 
     def to_url(self) -> str:
         """Get the corresponding URL from the SQL settings."""
-        if self.PASSWORD is None:
-            msg = "No password initialized"
-            raise ValueError(msg)
         if self.URL is not None:
             return str(self.URL)
         return sqlalchemy.URL.create(
             self.DRIVERNAME,
             self.USERNAME,
-            self.PASSWORD.get_secret_value(),
+            self._password.get_secret_value(),
             self.HOST,
             self.PORT,
             self.DATABASE,
@@ -94,20 +93,28 @@ class SQLSettings(BaseModel):
 class AuthSettings(BaseModel):
     """Authentication settings."""
 
+    ALGORITHM: Literal["ES256"] = "ES256"
     JWT_SECRET: SecretStr | None = None
     JWT_SECRET_FILE: FilePath | None = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    _jwt_secret: SecretStr
+
     @model_validator(mode="after")
     def consolidate_jwt_secret(self) -> Self:
         """Consolidate JWT secret and JWT secret file into `self.JWT_SECRET`."""
-        self.JWT_SECRET = consolidate_secret(
+        self._jwt_secret = consolidate_secret(
             self.JWT_SECRET,
             self.JWT_SECRET_FILE,
             "Neither JWT secret nor secret file provided",
             "Both JWT secret and secret file provided",
         )
         return self
+
+    @property
+    def jwt_secret(self) -> SecretStr:
+        """JWT secret."""
+        return self._jwt_secret
 
 
 class SongDBSettings(BaseSettings):

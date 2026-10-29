@@ -60,7 +60,11 @@ class SQLSettings(BaseModel):
     DATABASE: str | None = None
     QUERY: dict[str, tuple[str] | str] = Field(default_factory=dict)
 
-    URL: AnyUrl | None = None
+    URL: AnyUrl | None = Field(
+        default=None,
+        examples=["sqlite:///file:memdb1?mode=memory&cache=shared&uri=true"],
+    )
+    """URL override."""
 
     _password: SecretStr
 

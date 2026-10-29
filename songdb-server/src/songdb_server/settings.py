@@ -1,10 +1,11 @@
 """Settings for the SongDB Server."""
 
 import logging
-import secrets
-from typing import Literal
+from pathlib import Path
+from typing import Literal, Self
 
-from pydantic import BaseModel, Field, SecretStr
+import sqlalchemy
+from pydantic import AnyUrl, BaseModel, Field, FilePath, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 HashType = Literal["recommended"]
@@ -12,25 +13,101 @@ HashType = Literal["recommended"]
 logger = logging.getLogger(__name__)
 
 
-def default_secret_key() -> SecretStr:
-    """Function for generating a secret key for JWT token authentication."""
-    logger.warning("No secret key provided. Generating secret key.")
-    return SecretStr(secrets.token_hex(64))
+def consolidate_secret(
+    secret: SecretStr | None, secret_file: Path | None, neither_msg: str, both_msg: str
+) -> SecretStr:
+    """Return the consolidation of both a secret and a secret file.
+
+    if `secret` is not None, this function returns `secret`.
+    if `secret_file` is not None, this function returns `secret_file`'s contents.
+
+    Args:
+        secret: secret string
+        secret_file: Path to a secret
+        neither_msg: Error message when neither `secret` nor `secret_file` are provided
+        both_msg: Error message when both `secret` are `secret_file` are provided
+
+    Returns:
+        consolidated secret string
+
+    Raises:
+        ValueError:
+            if both secret and secret_file are provided
+            if neither secret nor secret_file are provided
+            if no secret can be returned
+    """
+    if secret is None and secret_file is None:
+        raise ValueError(neither_msg)
+    if secret is not None and secret_file is not None:
+        raise ValueError(both_msg)
+    if secret_file is not None:
+        return SecretStr(secret_file.read_text().strip())
+    if secret is not None:
+        return secret
+    msg = "Invalid secret configuration"
+    raise ValueError(msg)
 
 
-def default_sqlalchemy_url() -> str:
-    """Return the fallback SQLAlchemy URL that uses SQLite."""
-    logger.warning("No SQLAlchemy URL provided. Using fallback SQLite database.")
-    return "sqlite:///file:memdb1?mode=memory&cache=shared&uri=true"
+class SQLSettings(BaseModel):
+    """SQL database settings."""
+
+    DRIVERNAME: str
+    USERNAME: str | None = None
+    PASSWORD: SecretStr | None = None
+    PASSWORD_FILE: FilePath | None = None
+    HOST: str | None = None
+    PORT: int | None = None
+    DATABASE: str | None = None
+    QUERY: dict[str, tuple[str] | str] = Field(default_factory=dict)
+
+    URL: AnyUrl | None = None
+
+    @model_validator(mode="after")
+    def consolidate_password(self) -> Self:
+        """Consolidate SQL password and SQL password file into `self.PASSWORD`."""
+        self.PASSWORD = consolidate_secret(
+            self.PASSWORD,
+            self.PASSWORD_FILE,
+            "Neither SQL password nor password file provided",
+            "Both SQL password and password file provided",
+        )
+        return self
+
+    def to_url(self) -> str:
+        """Get the corresponding URL from the SQL settings."""
+        if self.PASSWORD is None:
+            msg = "No password initialized"
+            raise ValueError(msg)
+        if self.URL is not None:
+            return str(self.URL)
+        return sqlalchemy.URL.create(
+            self.DRIVERNAME,
+            self.USERNAME,
+            self.PASSWORD.get_secret_value(),
+            self.HOST,
+            self.PORT,
+            self.DATABASE,
+            self.QUERY,
+        ).render_as_string()
 
 
-class SongDBAuthSettings(BaseModel):
-    """Song database authentication settings."""
+class AuthSettings(BaseModel):
+    """Authentication settings."""
 
-    HASH_TYPE: HashType = "recommended"
-    SECRET_KEY: SecretStr = Field(default_factory=default_secret_key)
-    ALGORITHM: str = "HS256"
+    JWT_SECRET: SecretStr | None = None
+    JWT_SECRET_FILE: FilePath | None = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    @model_validator(mode="after")
+    def consolidate_jwt_secret(self) -> Self:
+        """Consolidate JWT secret and JWT secret file into `self.JWT_SECRET`."""
+        self.JWT_SECRET = consolidate_secret(
+            self.JWT_SECRET,
+            self.JWT_SECRET_FILE,
+            "Neither JWT secret nor secret file provided",
+            "Both JWT secret and secret file provided",
+        )
+        return self
 
 
 class SongDBSettings(BaseSettings):
@@ -43,5 +120,5 @@ class SongDBSettings(BaseSettings):
         extra="ignore",
     )
 
-    SQLALCHEMY_URL: str = Field(default_factory=default_sqlalchemy_url)
-    AUTH: SongDBAuthSettings = Field(default_factory=SongDBAuthSettings)
+    SQL: SQLSettings
+    AUTH: AuthSettings

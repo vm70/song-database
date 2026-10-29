@@ -9,6 +9,7 @@ x-services:
       MARIADB_PASSWORD: null
       MARIADB_PASSWORD_FILE: /run/secrets/songdb-mariadb-password
       MARIADB_DATABASE: ${MARIADB_DATABASE?}
+      MARIADB_ROOT_PASSWORD: null
       MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
     secrets:
       - songdb-mariadb-password
@@ -28,8 +29,6 @@ x-services:
       - 8000:8000
     env_file:
       - .env
-    environment:
-      ADMINER_DEFAULT_SERVER: mariadb
 
 services:
   mariadb:
@@ -38,24 +37,16 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
 
-  adminer:
-    profiles: [ "", "debug" ]
-    image: adminer
-    ports:
-      - 8080:8080
+  test-mariadb:
+    <<: *mariadb-common
+    profiles: [ "test" ]
+
+  songdb-server:
+    <<: *songdb-server-common
+    profiles: [ "" ]
     depends_on:
       mariadb:
         condition: service_healthy
-  # test-db:
-  #   <<: *mariadb-common
-  #   profiles: [ "test" ]
-
-  # songdb-server:
-  #   <<: *songdb-server-common
-  #   profiles: [ "" ]
-  #   depends_on:
-  #     mariadb:
-  #       condition: service_healthy
 
   # test:
   #   <<: *songdb-server-common
@@ -69,6 +60,17 @@ services:
   #       condition: service_healthy
   #   environment:
   #     SONGDB__SQLALCHEMY_URL: mariadb+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@test-mariadb:3306/${MARIADB_DATABASE}?charset=utf8mb4
+
+  adminer:
+    profiles: [ "", "debug" ]
+    image: adminer
+    ports:
+      - 8080:8080
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
 
 volumes:
   mariadb_data:

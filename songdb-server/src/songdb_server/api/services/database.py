@@ -15,17 +15,10 @@ logger = logging.getLogger(__name__)
 
 def init_engine(settings: SongDBSettings) -> Engine | None:
     """Initialize the SQLAlchemy engine."""
-    poolclass = None
-    connect_args = {}
-    if settings.SQLALCHEMY_URL.startswith("sqlite://"):
-        poolclass = StaticPool
-        connect_args["check_same_thread"] = False
-
     try:
         engine = create_engine(
-            url=settings.SQLALCHEMY_URL,
-            poolclass=poolclass,
-            connect_args=connect_args,
+            url=settings.SQL.to_url(),
+            poolclass=StaticPool if settings.SQL.DRIVERNAME == "sqlite" else None,
         )
         SQLModel.metadata.create_all(engine)
         return engine

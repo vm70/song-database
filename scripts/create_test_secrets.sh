@@ -1,4 +1,12 @@
 #!/bin/bash
+#
+# Populate the `secrets` directory with the required secret files.
+#
+# Usage:
+#
+# ```bash
+# ./scripts/create_test_secrets.sh 
+# ```
 
 echo -n "user-password" > ./secrets/songdb-mariadb-password
 echo -n "root-password" > ./secrets/songdb-mariadb-root-password

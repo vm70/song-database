@@ -48,13 +48,11 @@ class OAuth2Service:
         self, data: dict, expires_delta: timedelta | None = None
     ) -> str:
         """Create an access token."""
+        expires_delta = expires_delta or timedelta(
+            minutes=self.settings.AUTH.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
         to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.now(UTC) + expires_delta
-        else:
-            expire = datetime.now(UTC) + timedelta(
-                minutes=self.settings.AUTH.ACCESS_TOKEN_EXPIRE_MINUTES
-            )
+        expire = datetime.now(UTC) + expires_delta
         to_encode.update({"exp": expire})
         return jwt.encode(
             to_encode,

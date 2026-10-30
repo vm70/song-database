@@ -38,7 +38,7 @@ def consolidate_secret(secret: SecretStr | None, secret_file: Path | None) -> Se
         msg = "Neither secret nor secret file provided"
         raise ValueError(msg)
     if secret is not None and secret_file is not None:
-        msg = f"Both secret and secret file provided: {secret} and {secret_file}"
+        msg = "Both secret and secret file provided"
         raise ValueError(msg)
     if secret_file is not None:
         return SecretStr(secret_file.read_text().strip())

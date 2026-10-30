@@ -51,38 +51,48 @@ def consolidate_secret(secret: SecretStr | None, secret_file: Path | None) -> Se
 class SQLSettings(BaseModel):
     """SQL database settings."""
 
-    DRIVERNAME: str
+    DRIVERNAME: str | None = None
+    """Database backend and driver name."""
     USERNAME: str | None = None
+    """Username of the database user."""
     PASSWORD: SecretStr | None = None
-    PASSWORD_FILE: FilePath | None = None
-    HOST: str | None = None
-    PORT: int | None = None
-    DATABASE: str | None = None
-    QUERY: dict[str, tuple[str, ...] | str] = Field(default_factory=dict)
-    CONNECT_ARGS: dict[str, Any] = Field(default_factory=dict)
+    """Password of the database user.
 
-    URL: AnyUrl | None = Field(
+    This is not necessary if a password file is specified.
+    """
+    PASSWORD_FILE: FilePath | None = None
+    """File containing the password of the database user.
+
+    This is not necessary if a password is specified.
+    """
+    HOST: str | None = None
+    """Hostname or IP number. May also be a data source for some drivers."""
+    PORT: int | None = None
+    """Integer port number."""
+    DATABASE: str | None = None
+    """Database name."""
+    QUERY: dict[str, tuple[str, ...] | str] = Field(default_factory=dict)
+    """HTTP query parameters passed to the SQL dialect and/or the DBAPI upon connect."""
+    CONNECT_ARGS: dict[str, Any] = Field(default_factory=dict)
+    """SQLAlchemy connection arguments."""
+
+    URL_OVERRIDE: AnyUrl | None = Field(
         default=None,
         examples=["sqlite:///file:memdb1?mode=memory&cache=shared&uri=true"],
     )
-    """URL override."""
+    """URL override.
 
-    _password: SecretStr
+    If this is provided, then all other settings values (except for
+    CONNECT_ARGS) will be overwritten and auto-populated.
+    """
 
-    @model_validator(mode="after")
-    def consolidate_password(self) -> Self:
-        """Consolidate SQL password and SQL password file into `self.PASSWORD`."""
-        self._password = consolidate_secret(
-            self.PASSWORD,
-            self.PASSWORD_FILE,
-        )
-        return self
+    _consolidated_password: SecretStr
 
     @model_validator(mode="after")
     def use_override_url(self) -> Self:
         """Use the override URL."""
-        if self.URL is not None:
-            url = sqlalchemy.make_url(str(self.URL))
+        if self.URL_OVERRIDE is not None:
+            url = sqlalchemy.make_url(str(self.URL_OVERRIDE))
             self.DRIVERNAME = url.drivername
             self.USERNAME = url.username
             self.PASSWORD = SecretStr(url.password) if url.password else None
@@ -91,15 +101,26 @@ class SQLSettings(BaseModel):
             self.PORT = url.port
             self.DATABASE = url.database
             self.QUERY = {k: v for k, v in url.query.items()}
+        return self
 
+    @model_validator(mode="after")
+    def consolidate_password(self) -> Self:
+        """Consolidate SQL password and SQL password file into `self._password`."""
+        self._consolidated_password = consolidate_secret(
+            self.PASSWORD,
+            self.PASSWORD_FILE,
+        )
         return self
 
     def to_url(self) -> sqlalchemy.URL:
         """Get the corresponding URL from the SQL settings."""
+        if self.DRIVERNAME is None:
+            msg = "No SQL driver provided"
+            raise ValueError(msg)
         return sqlalchemy.URL.create(
             self.DRIVERNAME,
             self.USERNAME,
-            self._password.get_secret_value(),
+            self._consolidated_password.get_secret_value(),
             self.HOST,
             self.PORT,
             self.DATABASE,
@@ -111,23 +132,41 @@ class AuthSettings(BaseModel):
     """Authentication settings."""
 
     ALGORITHM: Literal["ES256"] = "ES256"
+    """JWT encryption algorithm."""
     JWT_PRIVATE_KEY: SecretStr | None = None
-    JWT_PRIVATE_KEY_FILE: FilePath | None = None
-    JWT_PUBLIC_KEY: SecretStr | None = None
-    JWT_PUBLIC_KEY_FILE: FilePath | None = None
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    """JWT private key for encryption.
 
-    _jwt_private_key: SecretStr
-    _jwt_public_key: SecretStr
+    This is not necessary if a private key file is specified.
+    """
+    JWT_PRIVATE_KEY_FILE: FilePath | None = None
+    """File containing the JWT private key for encryption.
+
+    This is not necessary if a private key is specified.
+    """
+    JWT_PUBLIC_KEY: SecretStr | None = None
+    """JWT public key for encryption.
+
+    This is not necessary if a public key file is specified.
+    """
+    JWT_PUBLIC_KEY_FILE: FilePath | None = None
+    """File containing the JWT public key for encryption.
+
+    This is not necessary if a public key is specified.
+    """
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    """JWT default expiration time, in minutes."""
+
+    _consolidated_jwt_private_key: SecretStr
+    _consolidated_jwt_public_key: SecretStr
 
     @model_validator(mode="after")
     def consolidate_jwt_secret(self) -> Self:
         """Consolidate JWT secrets / files."""
-        self._jwt_private_key = consolidate_secret(
+        self._consolidated_jwt_private_key = consolidate_secret(
             self.JWT_PRIVATE_KEY,
             self.JWT_PRIVATE_KEY_FILE,
         )
-        self._jwt_public_key = consolidate_secret(
+        self._consolidated_jwt_public_key = consolidate_secret(
             self.JWT_PUBLIC_KEY,
             self.JWT_PUBLIC_KEY_FILE,
         )
@@ -136,12 +175,12 @@ class AuthSettings(BaseModel):
     @property
     def jwt_private_key(self) -> SecretStr:
         """JWT private key."""
-        return self._jwt_private_key
+        return self._consolidated_jwt_private_key
 
     @property
     def jwt_public_key(self) -> SecretStr:
         """JWT public key."""
-        return self._jwt_public_key
+        return self._consolidated_jwt_public_key
 
 
 class SongDBSettings(BaseSettings):

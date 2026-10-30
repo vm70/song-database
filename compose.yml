@@ -24,7 +24,8 @@ x-services:
       - .env
     secrets:
       - songdb-mariadb-password
-      - songdb-auth-secret-key
+      - songdb-auth-private-key
+      - songdb-auth-public-key
     ports:
       - 8000:8000
 
@@ -79,8 +80,10 @@ volumes:
   mariadb_data:
 
 secrets:
-  songdb-auth-secret-key:
-    file: ./secrets/songdb-auth-secret-key
+  songdb-auth-private-key:
+    file: ./secrets/songdb-auth-private-key.pem
+  songdb-auth-public-key:
+    file: ./secrets/songdb-auth-public-key.pem
   songdb-mariadb-password:
     file: ./secrets/songdb-mariadb-password
   songdb-mariadb-root-password:

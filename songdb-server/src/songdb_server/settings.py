@@ -110,26 +110,38 @@ class SQLSettings(BaseModel):
 class AuthSettings(BaseModel):
     """Authentication settings."""
 
-    ALGORITHM: Literal["HS256"] = "HS256"
-    JWT_SECRET: SecretStr | None = None
-    JWT_SECRET_FILE: FilePath | None = None
+    ALGORITHM: Literal["ES256"] = "ES256"
+    JWT_PRIVATE_KEY: SecretStr | None = None
+    JWT_PRIVATE_KEY_FILE: FilePath | None = None
+    JWT_PUBLIC_KEY: SecretStr | None = None
+    JWT_PUBLIC_KEY_FILE: FilePath | None = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    _jwt_secret: SecretStr
+    _jwt_private_key: SecretStr
+    _jwt_public_key: SecretStr
 
     @model_validator(mode="after")
     def consolidate_jwt_secret(self) -> Self:
-        """Consolidate JWT secret and JWT secret file into `self.JWT_SECRET`."""
-        self._jwt_secret = consolidate_secret(
-            self.JWT_SECRET,
-            self.JWT_SECRET_FILE,
+        """Consolidate JWT secrets / files."""
+        self._jwt_private_key = consolidate_secret(
+            self.JWT_PRIVATE_KEY,
+            self.JWT_PRIVATE_KEY_FILE,
+        )
+        self._jwt_public_key = consolidate_secret(
+            self.JWT_PUBLIC_KEY,
+            self.JWT_PUBLIC_KEY_FILE,
         )
         return self
 
     @property
-    def jwt_secret(self) -> SecretStr:
-        """JWT secret."""
-        return self._jwt_secret
+    def jwt_private_key(self) -> SecretStr:
+        """JWT private key."""
+        return self._jwt_private_key
+
+    @property
+    def jwt_public_key(self) -> SecretStr:
+        """JWT public key."""
+        return self._jwt_public_key
 
 
 class SongDBSettings(BaseSettings):

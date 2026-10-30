@@ -39,6 +39,8 @@ services:
   test-mariadb:
     <<: *mariadb-common
     profiles: [ "test" ]
+    tmpfs:
+      - /var/lib/mysql
 
   songdb-server:
     <<: *songdb-server-common

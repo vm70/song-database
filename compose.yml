@@ -10,8 +10,6 @@ x-services:
       MARIADB_PASSWORD_FILE: /run/secrets/songdb-mariadb-password
       MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
       MARIADB_DATABASE: ${MARIADB_DATABASE}
-    ports:
-      - 3306:3306
     healthcheck:
       test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       interval: 10s
@@ -26,8 +24,6 @@ x-services:
       - songdb-mariadb-password
       - songdb-auth-private-key
       - songdb-auth-public-key
-    ports:
-      - 8000:8000
 
 services:
   mariadb:
@@ -35,6 +31,8 @@ services:
     profiles: [ "" ]
     volumes:
       - mariadb_data:/var/lib/mysql
+    ports:
+      - 3306:3306
 
   test-mariadb:
     <<: *mariadb-common
@@ -53,6 +51,8 @@ services:
         condition: service_healthy
     environment:
       SONGDB__SQL__HOST: mariadb
+    ports:
+      - 8000:8000
 
   test:
     <<: *songdb-server-common

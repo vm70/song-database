@@ -9,17 +9,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from songdb_server.api.lifespan import lifespan
 from songdb_server.api.routers import albums, artists, songs, users
+from songdb_server.settings import env_settings
+
+_settings = env_settings()
 
 app = FastAPI(
     title="Song Database API",
     version=metadata("songdb-server")["Version"],
     lifespan=lifespan,
+    openapi_url="/openapi.json" if _settings.API.SHOW_OPENAPI_JSON else None,
+    docs_url="/docs" if _settings.API.SHOW_DOCS else None,
+    redoc_url="/redoc" if _settings.API.SHOW_REDOC else None,
 )
 
-app.include_router(albums.router)
-app.include_router(artists.router)
-app.include_router(songs.router)
-app.include_router(users.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,6 +30,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(albums.router)
+app.include_router(artists.router)
+app.include_router(songs.router)
+app.include_router(users.router)
 
 
 def export_openapi_json(path: PathLike) -> None:

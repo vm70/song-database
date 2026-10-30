@@ -8,13 +8,13 @@ from sqlalchemy import Engine
 
 from songdb_server.api.services.authentication import OAuth2Service
 from songdb_server.api.services.database import init_engine
-from songdb_server.settings import SongDBSettings
+from songdb_server.settings import env_settings
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
     """FastAPI application lifespan."""
-    app.state.settings = SongDBSettings()
+    app.state.settings = env_settings()
     app.state.oauth2_service = OAuth2Service(app.state.settings)
     app.state.engine = init_engine(app.state.settings)
 

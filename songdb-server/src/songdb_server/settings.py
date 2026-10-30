@@ -1,14 +1,13 @@
 """Settings for the SongDB Server."""
 
 import logging
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal, Self
 
 import sqlalchemy
 from pydantic import AnyUrl, BaseModel, Field, FilePath, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-HashType = Literal["recommended"]
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +182,17 @@ class AuthSettings(BaseModel):
         return self._consolidated_jwt_public_key
 
 
+class ApiSettings(BaseModel):
+    """Song Database API settings."""
+
+    SHOW_DOCS: bool = False
+    """Whether to show API documentation at `/docs`."""
+    SHOW_REDOC: bool = False
+    """Whether to show API documentation at `/redoc`."""
+    SHOW_OPENAPI_JSON: bool = False
+    """Whether to show the OpenAPI JSON documentation at `/openapi.json`."""
+
+
 class SongDBSettings(BaseSettings):
     """Song database settings."""
 
@@ -195,3 +205,10 @@ class SongDBSettings(BaseSettings):
 
     SQL: SQLSettings
     AUTH: AuthSettings
+    API: ApiSettings
+
+
+@lru_cache(maxsize=1, typed=False)
+def env_settings() -> SongDBSettings:
+    """Read the settings from the `.env` file / shell environment."""
+    return SongDBSettings()

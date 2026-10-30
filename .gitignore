@@ -25,3 +25,6 @@ secrets/*
 doc/generated/*
 !doc/generated/.gitkeep
 songdb-client/*
+
+# IDE settings
+.vscode

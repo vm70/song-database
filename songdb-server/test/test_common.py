@@ -1,7 +1,5 @@
 """Common utilities for unit tests."""
 
-import json
-import os
 import unittest
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -26,13 +24,6 @@ class SongDBTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the test case."""
-        if os.environ.get("container") is None:
-            os.environ["SONGDB__SQL__URL"] = (
-                "sqlite:///file:memdb1?mode=memory&cache=shared&uri=true"
-            )
-            os.environ["SONGDB__SQL__CONNECT_ARGS"] = json.dumps(
-                {"check_same_thread": False}
-            )
         cls.client = TestClient(app)
         cls.client.__enter__()
 

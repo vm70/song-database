@@ -4,7 +4,6 @@ import time
 import unittest
 from uuid import uuid4
 
-from pydantic import AnyUrl
 from songdb_server.api.services.authentication import OAuth2Service
 from songdb_server.api.services.database import init_engine
 from songdb_server.models.user import User
@@ -22,9 +21,6 @@ class TestSongDBOAuth2Service(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the class."""
         settings = SongDBSettings()
-        settings.SQL.URL = AnyUrl(
-            "sqlite:///file:memdb1?mode=memory&cache=shared&uri=true"
-        )
         cls.service = OAuth2Service(settings)
         cls.engine = init_engine(settings)
 

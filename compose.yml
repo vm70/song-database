@@ -46,6 +46,8 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+    environment:
+      SONGDB__SQL__HOST: mariadb
 
   test:
     <<: *songdb-server-common

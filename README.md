@@ -2,7 +2,7 @@
 
 This is a simple test application that I'm making to teach myself a proper structure for building cloud-based / containerized applications.
 
-> ![WARNING]  
+> [!WARNING]  
 > This is a toy example, so it's probably not safe for production use. If you want to spin up your own pre-made production application, take a look at the [full-stack FastAPI template](https://github.com/fastapi/full-stack-fastapi-template).
 
 ## Docker Commands

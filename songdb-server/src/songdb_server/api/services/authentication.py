@@ -65,6 +65,7 @@ class OAuth2Service:
         return jwt.decode(
             token,
             key=self.settings.AUTH.jwt_secret.get_secret_value(),
+            algorithms=[self.settings.AUTH.ALGORITHM],
         )
 
 

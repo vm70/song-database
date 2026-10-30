@@ -10,13 +10,13 @@ from sqlmodel import Field, SQLModel
 class BaseUser(SQLModel):
     """Base user class."""
 
-    username: str = Field(unique=True)
+    username: str = Field(unique=True, min_length=1)
 
 
 class UserCreateRequest(BaseUser):
     """User creation request."""
 
-    password: str
+    password: str = Field(min_length=8)
 
 
 class User(BaseUser, table=True):

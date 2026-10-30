@@ -13,7 +13,7 @@ from songdb_server.models._common import SongDBEntry
 class BaseSong(SQLModel):
     """Base song class."""
 
-    title: str
+    title: str = Field(min_length=1)
     album_uuid: UUID = Field(foreign_key="album.uuid")
     track_number: NonNegativeInt
     duration: timedelta

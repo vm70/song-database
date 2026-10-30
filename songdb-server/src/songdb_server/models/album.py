@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlmodel import SQLModel
+from sqlmodel import Field, SQLModel
 
 from songdb_server.models._common import SongDBEntry
 
@@ -11,7 +11,7 @@ from songdb_server.models._common import SongDBEntry
 class BaseAlbum(SQLModel):
     """Base album class."""
 
-    title: str
+    title: str = Field(min_length=1)
     release_date: datetime
 
 

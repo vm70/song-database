@@ -1,6 +1,6 @@
 """Artist models."""
 
-from sqlmodel import SQLModel
+from sqlmodel import Field, SQLModel
 
 from songdb_server.models._common import SongDBEntry
 
@@ -8,7 +8,7 @@ from songdb_server.models._common import SongDBEntry
 class BaseArtist(SQLModel):
     """Base artist class."""
 
-    name: str
+    name: str = Field(min_length=1)
 
 
 class ArtistCreateRequest(BaseArtist):
@@ -20,7 +20,7 @@ class ArtistCreateRequest(BaseArtist):
 class ArtistPatchRequest(SQLModel):
     """Artist patch request."""
 
-    name: str | None = None
+    name: str | None = Field(min_length=1)
 
 
 class Artist(

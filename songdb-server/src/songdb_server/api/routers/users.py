@@ -14,7 +14,6 @@ from songdb_server.models.token import Token, TokenData
 from songdb_server.models.user import (
     User,
     UserCreateRequest,
-    UserListResponse,
     UserResponse,
 )
 from sqlalchemy.exc import IntegrityError
@@ -133,11 +132,3 @@ async def deactivate_user(
     session.commit()
     session.refresh(current_active_user)
     return UserResponse.from_db_entry(current_active_user)
-
-
-@users_router.get("", dependencies=[Depends(get_current_active_user)])
-def get_users(
-    session: SessionDep,
-) -> UserListResponse:
-    """Get the list of all current users."""
-    return UserListResponse.from_db_entries(session.exec(select(User)).all())

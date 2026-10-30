@@ -7,6 +7,7 @@ import jwt
 from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
+from pwdlib.hashers.argon2 import Argon2Hasher
 from songdb_server.models.user import User
 from songdb_server.settings import SongDBSettings
 
@@ -22,9 +23,7 @@ class OAuth2Service:
 
     def __init__(self, settings: SongDBSettings) -> None:
         """Initialize the OAuth2 service."""
-        if settings.AUTH.HASH_TYPE == "recommended":
-            self.password_hash = PasswordHash.recommended()
-
+        self.password_hash = PasswordHash(hashers=[Argon2Hasher()])
         self.settings = settings
         self.DUMMY_HASH = self.password_hash.hash("dummy_password")
 
@@ -57,7 +56,7 @@ class OAuth2Service:
         to_encode.update({"exp": expire})
         return jwt.encode(
             to_encode,
-            self.settings.AUTH.SECRET_KEY.get_secret_value(),
+            self.settings.AUTH.jwt_private_key.get_secret_value(),
             algorithm=self.settings.AUTH.ALGORITHM,
         )
 
@@ -65,7 +64,7 @@ class OAuth2Service:
         """Decode the access token."""
         return jwt.decode(
             token,
-            key=self.settings.AUTH.SECRET_KEY.get_secret_value(),
+            key=self.settings.AUTH.jwt_public_key.get_secret_value(),
             algorithms=[self.settings.AUTH.ALGORITHM],
         )
 

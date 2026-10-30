@@ -1,5 +1,6 @@
 """Test creating & modifying artists."""
 
+import time
 import unittest
 
 from fastapi import status
@@ -64,6 +65,7 @@ class TestSongDBArtist(AuthenticatedSongDBTestCase):
         self.assertNotEqual(old_user.uuid, new_user.uuid)
 
         new_name = self.fake.name()
+        time.sleep(1)
         new_artist = self.validate_api_call(
             "patch",
             f"/artists/{self.artist.uuid}",

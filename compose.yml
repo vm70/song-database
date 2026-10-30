@@ -1,14 +1,17 @@
 x-services:
 
-  db-common: &db-common
+  mariadb-common: &mariadb-common
     image: mariadb
-    env_file:
-      - .env
+    secrets:
+      - songdb-mariadb-password
+      - songdb-mariadb-root-password
     environment:
-      MARIADB_USER: ${MARIADB_USER?}
-      MARIADB_PASSWORD: ${MARIADB_PASSWORD?}
-      MARIADB_DATABASE: ${MARIADB_DATABASE?}
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD?}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD_FILE: /run/secrets/songdb-mariadb-password
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+    ports:
+      - 3306:3306
     healthcheck:
       test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       interval: 10s
@@ -17,31 +20,39 @@ x-services:
       start_period: 30s
 
   songdb-server-common: &songdb-server-common
-    build:
-      context: ./songdb-server
-      dockerfile: Dockerfile
-    ports:
-      - 8000:8000
     env_file:
       - .env
+    secrets:
+      - songdb-mariadb-password
+      - songdb-auth-private-key
+      - songdb-auth-public-key
+    ports:
+      - 8000:8000
 
 services:
-  db:
-    <<: *db-common
-    profiles: [ "app" ]
+  mariadb:
+    <<: *mariadb-common
+    profiles: [ "" ]
     volumes:
       - mariadb_data:/var/lib/mysql
 
+  test-mariadb:
+    <<: *mariadb-common
+    profiles: [ "test" ]
+    tmpfs:
+      - /var/lib/mysql
+
   songdb-server:
     <<: *songdb-server-common
-    profiles: [ "app" ]
+    profiles: [ "" ]
+    build:
+      context: ./songdb-server
+      dockerfile: Dockerfile
     depends_on:
-      db:
+      mariadb:
         condition: service_healthy
-
-  test-db:
-    <<: *db-common
-    profiles: [ "test" ]
+    environment:
+      SONGDB__SQL__HOST: mariadb
 
   test:
     <<: *songdb-server-common
@@ -49,13 +60,33 @@ services:
     build:
       context: ./songdb-server
       dockerfile: Dockerfile.test
-    environment:
-      SONGDB__SQLALCHEMY_URL: mariadb+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@test-db:3306/${MARIADB_DATABASE}?charset=utf8mb4
     depends_on:
-      test-db:
+      test-mariadb:
         restart: true
         condition: service_healthy
-    command: [ "pytest", "." ]
+    environment:
+      SONGDB__SQL__HOST: test-mariadb
+
+  adminer:
+    profiles: [ "", "debug" ]
+    image: adminer
+    ports:
+      - 8080:8080
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
 
 volumes:
   mariadb_data:
+
+secrets:
+  songdb-auth-private-key:
+    file: ./secrets/songdb-auth-private-key.pem
+  songdb-auth-public-key:
+    file: ./secrets/songdb-auth-public-key.pem
+  songdb-mariadb-password:
+    file: ./secrets/songdb-mariadb-password
+  songdb-mariadb-root-password:
+    file: ./secrets/songdb-mariadb-root-password

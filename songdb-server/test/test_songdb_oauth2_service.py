@@ -7,7 +7,7 @@ from uuid import uuid4
 from songdb_server.api.services.authentication import OAuth2Service
 from songdb_server.api.services.database import init_engine
 from songdb_server.models.user import User
-from songdb_server.settings import SongDBSettings, default_sqlalchemy_url
+from songdb_server.settings import SongDBSettings
 from sqlalchemy import Engine
 
 
@@ -21,7 +21,6 @@ class TestSongDBOAuth2Service(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up the class."""
         settings = SongDBSettings()
-        settings.SQLALCHEMY_URL = default_sqlalchemy_url()
         cls.service = OAuth2Service(settings)
         cls.engine = init_engine(settings)
 

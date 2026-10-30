@@ -8,10 +8,17 @@ import sqlalchemy
 from pydantic import AnyUrl, BaseModel, Field, FilePath, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from songdb_server.keygen import verify_keys
+
 logger = logging.getLogger(__name__)
 
 
-def consolidate_secret(secret: SecretStr | None, secret_file: Path | None) -> SecretStr:
+def consolidate_secret(
+    secret: SecretStr | None,
+    secret_file: Path | None,
+    secret_env_var: str,
+    secret_file_env_var: str,
+) -> SecretStr:
     """Return the consolidation of both a secret and a secret file.
 
     if `secret` is not None, this function returns `secret`.
@@ -20,30 +27,33 @@ def consolidate_secret(secret: SecretStr | None, secret_file: Path | None) -> Se
     Args:
         secret: secret string
         secret_file: Path to a secret
-        neither_msg: Error message when neither `secret` nor `secret_file` are provided
-        both_msg: Error message when both `secret` are `secret_file` are provided
+        secret_env_var: secret string environment variable name
+        secret_file_env_var: secret file environment variable name
 
     Returns:
-        consolidated secret string
+        consolidated secret string, or None
 
     Raises:
         ValueError:
-            if both secret and secret_file are provided
-            if neither secret nor secret_file are provided
             if no secret can be returned
     """
     if secret is None and secret_file is None:
-        msg = "Neither secret nor secret file provided"
-        raise ValueError(msg)
+        logger.warning(
+            "Neither options %s and %s were provided.",
+            secret_env_var,
+            secret_file_env_var,
+        )
+        return SecretStr("")
     if secret is not None and secret_file is not None:
-        msg = "Both secret and secret file provided"
-        raise ValueError(msg)
+        logger.warning(
+            "Both options %s and %s were provided. Defaulting to %s",
+            secret_env_var,
+            secret_file_env_var,
+            secret_file_env_var,
+        )
     if secret_file is not None:
         return SecretStr(secret_file.read_text().strip())
-    if secret is not None:
-        return secret
-    msg = "Invalid secret configuration"
-    raise ValueError(msg)
+    return None
 
 
 class SQLSettings(BaseModel):
@@ -107,6 +117,8 @@ class SQLSettings(BaseModel):
         self._consolidated_password = consolidate_secret(
             self.PASSWORD,
             self.PASSWORD_FILE,
+            "SONGDB__SQL__PASSWORD",
+            "SONGDB__SQL__PASSWORD_FILE",
         )
         return self
 
@@ -163,10 +175,18 @@ class AuthSettings(BaseModel):
         self._consolidated_jwt_private_key = consolidate_secret(
             self.JWT_PRIVATE_KEY,
             self.JWT_PRIVATE_KEY_FILE,
+            "SONGDB__JWT__PRIVATE_KEY",
+            "SONGDB__JWT__PRIVATE_KEY_FILE",
         )
         self._consolidated_jwt_public_key = consolidate_secret(
             self.JWT_PUBLIC_KEY,
             self.JWT_PUBLIC_KEY_FILE,
+            "SONGDB__JWT__PUBLIC_KEY",
+            "SONGDB__JWT__PUBLIC_KEY_FILE",
+        )
+        verify_keys(
+            self._consolidated_jwt_private_key.get_secret_value(),
+            self._consolidated_jwt_public_key.get_secret_value(),
         )
         return self
 

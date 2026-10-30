@@ -1,7 +1,6 @@
 """Settings for the SongDB Server."""
 
 import logging
-from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal, Self
 
@@ -206,9 +205,3 @@ class SongDBSettings(BaseSettings):
     SQL: SQLSettings
     AUTH: AuthSettings
     API: ApiSettings
-
-
-@lru_cache(maxsize=1, typed=False)
-def env_settings() -> SongDBSettings:
-    """Read the settings from the `.env` file / shell environment."""
-    return SongDBSettings()

@@ -9,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from songdb_server.api.lifespan import lifespan
 from songdb_server.api.routers import albums, artists, songs, users
-from songdb_server.settings import env_settings
+from songdb_server.settings import SongDBSettings
 
-_settings = env_settings()
+_settings = SongDBSettings()
 
 app = FastAPI(
     title="Song Database API",
@@ -21,6 +21,8 @@ app = FastAPI(
     docs_url="/docs" if _settings.API.SHOW_DOCS else None,
     redoc_url="/redoc" if _settings.API.SHOW_REDOC else None,
 )
+
+del _settings
 
 
 app.add_middleware(

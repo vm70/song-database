@@ -4,16 +4,12 @@ x-services:
     image: mariadb
     env_file:
       - .env
-    environment:
-      MARIADB_USER: ${MARIADB_USER?}
-      MARIADB_PASSWORD: null
-      MARIADB_PASSWORD_FILE: /run/secrets/songdb-mariadb-password
-      MARIADB_DATABASE: ${MARIADB_DATABASE?}
-      MARIADB_ROOT_PASSWORD: null
-      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
     secrets:
       - songdb-mariadb-password
       - songdb-mariadb-root-password
+    environment:
+      MARIADB_PASSWORD_FILE: /run/secrets/songdb-mariadb-password
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
     healthcheck:
       test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       interval: 10s
@@ -22,10 +18,13 @@ x-services:
       start_period: 30s
 
   songdb-server-common: &songdb-server-common
-    ports:
-      - 8000:8000
     env_file:
       - .env
+    secrets:
+      - songdb-mariadb-password
+      - songdb-auth-secret-key
+    ports:
+      - 8000:8000
 
 services:
   mariadb:
@@ -59,7 +58,7 @@ services:
         restart: true
         condition: service_healthy
     environment:
-      SONGDB__SQL__HOST: test-mariadb 
+      SONGDB__SQL__HOST: test-mariadb
 
   adminer:
     profiles: [ "", "debug" ]

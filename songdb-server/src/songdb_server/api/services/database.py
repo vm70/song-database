@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from songdb_server.settings import SongDBSettings
-from sqlalchemy import Engine, StaticPool
+from sqlalchemy import Engine
 from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, SQLModel, create_engine
 
@@ -17,8 +17,7 @@ def init_engine(settings: SongDBSettings) -> Engine | None:
     """Initialize the SQLAlchemy engine."""
     try:
         engine = create_engine(
-            url=settings.SQL.to_url(),
-            poolclass=StaticPool if settings.SQL.DRIVERNAME == "sqlite" else None,
+            url=settings.SQL.to_url(), connect_args=settings.SQL.CONNECT_ARGS
         )
         SQLModel.metadata.create_all(engine)
         return engine

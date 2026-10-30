@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Literal, Self
+from typing import Any, Literal, Self
 
 import sqlalchemy
 from pydantic import AnyUrl, BaseModel, Field, FilePath, SecretStr, model_validator
@@ -13,9 +13,7 @@ HashType = Literal["recommended"]
 logger = logging.getLogger(__name__)
 
 
-def consolidate_secret(
-    secret: SecretStr | None, secret_file: Path | None, neither_msg: str, both_msg: str
-) -> SecretStr:
+def consolidate_secret(secret: SecretStr | None, secret_file: Path | None) -> SecretStr:
     """Return the consolidation of both a secret and a secret file.
 
     if `secret` is not None, this function returns `secret`.
@@ -37,9 +35,11 @@ def consolidate_secret(
             if no secret can be returned
     """
     if secret is None and secret_file is None:
-        raise ValueError(neither_msg)
+        msg = "Neither secret nor secret file provided"
+        raise ValueError(msg)
     if secret is not None and secret_file is not None:
-        raise ValueError(both_msg)
+        msg = f"Both secret and secret file provided: {secret} and {secret_file}"
+        raise ValueError(msg)
     if secret_file is not None:
         return SecretStr(secret_file.read_text().strip())
     if secret is not None:
@@ -58,7 +58,8 @@ class SQLSettings(BaseModel):
     HOST: str | None = None
     PORT: int | None = None
     DATABASE: str | None = None
-    QUERY: dict[str, tuple[str] | str] = Field(default_factory=dict)
+    QUERY: dict[str, tuple[str, ...] | str] = Field(default_factory=dict)
+    CONNECT_ARGS: dict[str, Any] = Field(default_factory=dict)
 
     URL: AnyUrl | None = Field(
         default=None,
@@ -74,9 +75,23 @@ class SQLSettings(BaseModel):
         self._password = consolidate_secret(
             self.PASSWORD,
             self.PASSWORD_FILE,
-            "Neither SQL password nor password file provided",
-            "Both SQL password and password file provided",
         )
+        return self
+
+    @model_validator(mode="after")
+    def use_override_url(self) -> Self:
+        """Use the override URL."""
+        if self.URL is not None:
+            url = sqlalchemy.make_url(str(self.URL))
+            self.DRIVERNAME = url.drivername
+            self.USERNAME = url.username
+            self.PASSWORD = SecretStr(url.password) if url.password else None
+            self.PASSWORD_FILE = None
+            self.HOST = url.host
+            self.PORT = url.port
+            self.DATABASE = url.database
+            self.QUERY = {k: v for k, v in url.query.items()}
+
         return self
 
     def to_url(self) -> str:
@@ -97,7 +112,7 @@ class SQLSettings(BaseModel):
 class AuthSettings(BaseModel):
     """Authentication settings."""
 
-    ALGORITHM: Literal["ES256"] = "ES256"
+    ALGORITHM: Literal["HS256"] = "HS256"
     JWT_SECRET: SecretStr | None = None
     JWT_SECRET_FILE: FilePath | None = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -110,8 +125,6 @@ class AuthSettings(BaseModel):
         self._jwt_secret = consolidate_secret(
             self.JWT_SECRET,
             self.JWT_SECRET_FILE,
-            "Neither JWT secret nor secret file provided",
-            "Both JWT secret and secret file provided",
         )
         return self
 

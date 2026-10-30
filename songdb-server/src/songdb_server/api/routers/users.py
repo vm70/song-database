@@ -19,7 +19,7 @@ from songdb_server.models.user import (
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
-users_router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 def get_user(username: str, session: SessionDep) -> User | None:
@@ -73,7 +73,7 @@ def get_current_active_user(
 CurrentActiveUserDep = Annotated[User, Depends(get_current_active_user)]
 
 
-@users_router.post("/token")
+@router.post("/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: SessionDep,
@@ -95,7 +95,7 @@ async def login_for_access_token(
     return Token(access_token=access_token, token_type="bearer")  # noqa: S106
 
 
-@users_router.post("")
+@router.post("")
 def add_user(
     user_in: UserCreateRequest,
     oauth2_service: OAuth2ServiceDep,
@@ -117,13 +117,13 @@ def add_user(
     return UserResponse(uuid=user.uuid, username=user.username)
 
 
-@users_router.get("/me")
+@router.get("/me")
 async def get_user_info(current_active_user: CurrentActiveUserDep) -> UserResponse:
     """Get information about the current user."""
     return UserResponse.from_db_entry(current_active_user)
 
 
-@users_router.delete("/me")
+@router.delete("/me")
 async def deactivate_user(
     current_active_user: CurrentActiveUserDep, session: SessionDep
 ) -> UserResponse:

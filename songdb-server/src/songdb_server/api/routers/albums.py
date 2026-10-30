@@ -14,10 +14,10 @@ from songdb_server.models.album import Album, AlbumCreateRequest, AlbumListRespo
 from songdb_server.models.album_artist import AlbumArtist
 from songdb_server.models.artist import Artist
 
-albums_router = APIRouter(prefix="/albums", tags=["albums"])
+router = APIRouter(prefix="/albums", tags=["albums"])
 
 
-@albums_router.post("")
+@router.post("")
 def add_album(
     current_active_user: CurrentActiveUserDep,
     album_in: AlbumCreateRequest,
@@ -51,7 +51,7 @@ def add_album(
     return album
 
 
-@albums_router.get("/{album_uuid}", dependencies=[Depends(get_current_active_user)])
+@router.get("/{album_uuid}", dependencies=[Depends(get_current_active_user)])
 def get_album(
     album_uuid: UUID,
     session: SessionDep,
@@ -60,7 +60,7 @@ def get_album(
     return get_item(session, Album, album_uuid)
 
 
-@albums_router.get("", dependencies=[Depends(get_current_active_user)])
+@router.get("", dependencies=[Depends(get_current_active_user)])
 def get_albums(
     session: SessionDep,
 ) -> AlbumListResponse:

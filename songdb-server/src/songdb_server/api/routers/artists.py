@@ -17,10 +17,10 @@ from songdb_server.models.artist import (
     ArtistPatchRequest,
 )
 
-artists_router = APIRouter(prefix="/artists", tags=["artists"])
+router = APIRouter(prefix="/artists", tags=["artists"])
 
 
-@artists_router.post("")
+@router.post("")
 def add_artist(
     current_active_user: CurrentActiveUserDep,
     artist_in: ArtistCreateRequest,
@@ -34,7 +34,7 @@ def add_artist(
     return artist
 
 
-@artists_router.get("/{artist_uuid}", dependencies=[Depends(get_current_active_user)])
+@router.get("/{artist_uuid}", dependencies=[Depends(get_current_active_user)])
 def get_artist(
     artist_uuid: UUID,
     session: SessionDep,
@@ -43,7 +43,7 @@ def get_artist(
     return get_item(session, Artist, artist_uuid)
 
 
-@artists_router.get("", dependencies=[Depends(get_current_active_user)])
+@router.get("", dependencies=[Depends(get_current_active_user)])
 def get_artists(
     session: SessionDep,
 ) -> ArtistListResponse:
@@ -51,7 +51,7 @@ def get_artists(
     return ArtistListResponse(artists=get_items(session, Artist))
 
 
-@artists_router.patch("/{artist_uuid}")
+@router.patch("/{artist_uuid}")
 def patch_artist(
     session: SessionDep,
     current_active_user: CurrentActiveUserDep,

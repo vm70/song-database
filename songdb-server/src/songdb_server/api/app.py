@@ -8,10 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from songdb_server.api.lifespan import lifespan
-from songdb_server.api.routers.albums import albums_router
-from songdb_server.api.routers.artists import artists_router
-from songdb_server.api.routers.songs import songs_router
-from songdb_server.api.routers.users import users_router
+from songdb_server.api.routers import albums, artists, songs, users
 
 app = FastAPI(
     title="Song Database API",
@@ -19,10 +16,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(songs_router)
-app.include_router(albums_router)
-app.include_router(artists_router)
-app.include_router(users_router)
+app.include_router(albums.router)
+app.include_router(artists.router)
+app.include_router(songs.router)
+app.include_router(users.router)
 
 app.add_middleware(
     CORSMiddleware,

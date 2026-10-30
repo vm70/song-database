@@ -5,6 +5,7 @@ from importlib.metadata import metadata
 from os import PathLike
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from songdb_server.api.lifespan import lifespan
 from songdb_server.api.routers.albums import albums_router
@@ -22,6 +23,14 @@ app.include_router(songs_router)
 app.include_router(albums_router)
 app.include_router(artists_router)
 app.include_router(users_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost", "http://localhost:8000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def export_openapi_json(path: PathLike) -> None:

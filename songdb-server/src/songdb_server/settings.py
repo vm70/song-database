@@ -1,7 +1,6 @@
 """Settings for the SongDB Server."""
 
 import logging
-from pathlib import Path
 from typing import Any, Literal, Self
 
 import sqlalchemy
@@ -13,47 +12,36 @@ from songdb_server.keygen import verify_keys
 logger = logging.getLogger(__name__)
 
 
-def consolidate_secret(
+def fetch_secret(
     secret: SecretStr | None,
-    secret_file: Path | None,
-    secret_env_var: str,
-    secret_file_env_var: str,
-) -> SecretStr:
-    """Return the consolidation of both a secret and a secret file.
-
-    if `secret` is not None, this function returns `secret`.
-    if `secret_file` is not None, this function returns `secret_file`'s contents.
+    secret_env_name: str,
+    secret_file: FilePath | None,
+    secret_file_env_name: str,
+) -> SecretStr | None:
+    """Fetch a given secret's actual value.
 
     Args:
-        secret: secret string
-        secret_file: Path to a secret
-        secret_env_var: secret string environment variable name
-        secret_file_env_var: secret file environment variable name
-
-    Returns:
-        consolidated secret string, or None
-
-    Raises:
-        ValueError:
-            if no secret can be returned
+        secret: secret string (or none)
+        secret_env_name: secret string environment variable name
+        secret_file: secret file (or none)
+        secret_file_env_name: secret file environment variable name
     """
     if secret is None and secret_file is None:
-        logger.warning(
-            "Neither options %s and %s were provided.",
-            secret_env_var,
-            secret_file_env_var,
+        logger.fatal(
+            "Neither options %s nor %s were provided.",
+            secret_env_name,
+            secret_file_env_name,
         )
-        return SecretStr("")
     if secret is not None and secret_file is not None:
         logger.warning(
             "Both options %s and %s were provided. Defaulting to %s",
-            secret_env_var,
-            secret_file_env_var,
-            secret_file_env_var,
+            secret_env_name,
+            secret_file_env_name,
+            secret_file_env_name,
         )
     if secret_file is not None:
         return SecretStr(secret_file.read_text().strip())
-    return None
+    return secret
 
 
 class SQLSettings(BaseModel):
@@ -94,8 +82,6 @@ class SQLSettings(BaseModel):
     CONNECT_ARGS) will be overwritten and auto-populated.
     """
 
-    _consolidated_password: SecretStr
-
     @model_validator(mode="after")
     def use_override_url(self) -> Self:
         """Use the override URL."""
@@ -111,26 +97,25 @@ class SQLSettings(BaseModel):
             self.QUERY = {k: v for k, v in url.query.items()}
         return self
 
-    @model_validator(mode="after")
-    def consolidate_password(self) -> Self:
-        """Consolidate SQL password and SQL password file into `self._password`."""
-        self._consolidated_password = consolidate_secret(
+    def fetch_password(self) -> SecretStr | None:
+        """Get The SQL password, if provided."""
+        return fetch_secret(
             self.PASSWORD,
-            self.PASSWORD_FILE,
             "SONGDB__SQL__PASSWORD",
+            self.PASSWORD_FILE,
             "SONGDB__SQL__PASSWORD_FILE",
         )
-        return self
 
     def to_url(self) -> sqlalchemy.URL:
         """Get the corresponding URL from the SQL settings."""
         if self.DRIVERNAME is None:
             msg = "No SQL driver provided"
             raise ValueError(msg)
+        password = self.fetch_password()
         return sqlalchemy.URL.create(
             self.DRIVERNAME,
             self.USERNAME,
-            self._consolidated_password.get_secret_value(),
+            password if password is None else password.get_secret_value(),
             self.HOST,
             self.PORT,
             self.DATABASE,
@@ -166,39 +151,42 @@ class AuthSettings(BaseModel):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     """JWT default expiration time, in minutes."""
 
-    _consolidated_jwt_private_key: SecretStr
-    _consolidated_jwt_public_key: SecretStr
+    def fetch_jwt_private_key(self) -> SecretStr:
+        """Get the JWT private key, if available."""
+        private_key = fetch_secret(
+            self.JWT_PRIVATE_KEY,
+            "SONGDB__AUTH__JWT_PRIVATE_KEY",
+            self.JWT_PRIVATE_KEY_FILE,
+            "SONGDB__AUTH__JWT_PRIVATE_KEY_FILE",
+        )
+        if private_key is None:
+            msg = "Could not fetch private key"
+            raise ValueError(msg)
+        return private_key
+
+    def fetch_jwt_public_key(self) -> SecretStr:
+        """Get the JWT public key, if available."""
+        public_key = fetch_secret(
+            self.JWT_PUBLIC_KEY,
+            "SONGDB__AUTH__JWT_PUBLIC_KEY",
+            self.JWT_PUBLIC_KEY_FILE,
+            "SONGDB__AUTH__JWT_PUBLIC_KEY_FILE",
+        )
+        if public_key is None:
+            msg = "Could not fetch public key"
+            raise ValueError(msg)
+        return public_key
 
     @model_validator(mode="after")
-    def consolidate_jwt_secret(self) -> Self:
-        """Consolidate JWT secrets / files."""
-        self._consolidated_jwt_private_key = consolidate_secret(
-            self.JWT_PRIVATE_KEY,
-            self.JWT_PRIVATE_KEY_FILE,
-            "SONGDB__JWT__PRIVATE_KEY",
-            "SONGDB__JWT__PRIVATE_KEY_FILE",
-        )
-        self._consolidated_jwt_public_key = consolidate_secret(
-            self.JWT_PUBLIC_KEY,
-            self.JWT_PUBLIC_KEY_FILE,
-            "SONGDB__JWT__PUBLIC_KEY",
-            "SONGDB__JWT__PUBLIC_KEY_FILE",
-        )
+    def verify_jwt_keys(self) -> Self:
+        """Verify JWT secrets work."""
+        private_key = self.fetch_jwt_private_key()
+        public_key = self.fetch_jwt_public_key()
         verify_keys(
-            self._consolidated_jwt_private_key.get_secret_value(),
-            self._consolidated_jwt_public_key.get_secret_value(),
+            private_key.get_secret_value(),
+            public_key.get_secret_value(),
         )
         return self
-
-    @property
-    def jwt_private_key(self) -> SecretStr:
-        """JWT private key."""
-        return self._consolidated_jwt_private_key
-
-    @property
-    def jwt_public_key(self) -> SecretStr:
-        """JWT public key."""
-        return self._consolidated_jwt_public_key
 
 
 class ApiSettings(BaseModel):

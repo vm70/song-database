@@ -56,7 +56,7 @@ class OAuth2Service:
         to_encode.update({"exp": expire})
         return jwt.encode(
             to_encode,
-            self.settings.AUTH.jwt_private_key.get_secret_value(),
+            self.settings.AUTH.fetch_jwt_private_key().get_secret_value(),
             algorithm=self.settings.AUTH.ALGORITHM,
         )
 
@@ -64,7 +64,7 @@ class OAuth2Service:
         """Decode the access token."""
         return jwt.decode(
             token,
-            key=self.settings.AUTH.jwt_public_key.get_secret_value(),
+            key=self.settings.AUTH.fetch_jwt_public_key().get_secret_value(),
             algorithms=[self.settings.AUTH.ALGORITHM],
         )
 

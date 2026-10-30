@@ -2,14 +2,16 @@ x-services:
 
   mariadb-common: &mariadb-common
     image: mariadb
-    env_file:
-      - .env
     secrets:
       - songdb-mariadb-password
       - songdb-mariadb-root-password
     environment:
+      MARIADB_USER: ${MARIADB_USER}
       MARIADB_PASSWORD_FILE: /run/secrets/songdb-mariadb-password
       MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+    ports:
+      - 3306:3306
     healthcheck:
       test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       interval: 10s

@@ -94,10 +94,8 @@ class SQLSettings(BaseModel):
 
         return self
 
-    def to_url(self) -> str:
+    def to_url(self) -> sqlalchemy.URL:
         """Get the corresponding URL from the SQL settings."""
-        if self.URL is not None:
-            return str(self.URL)
         return sqlalchemy.URL.create(
             self.DRIVERNAME,
             self.USERNAME,
@@ -106,7 +104,7 @@ class SQLSettings(BaseModel):
             self.PORT,
             self.DATABASE,
             self.QUERY,
-        ).render_as_string()
+        )
 
 
 class AuthSettings(BaseModel):

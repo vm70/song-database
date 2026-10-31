@@ -5,6 +5,16 @@ This is a simple test application that I'm making to teach myself a proper struc
 > [!WARNING]  
 > This is a toy example, so it's probably not safe for production use. If you want to spin up your own pre-made production application, take a look at the [full-stack FastAPI template](https://github.com/fastapi/full-stack-fastapi-template).
 
+## Secrets Generation
+
+To generate the secrets required to run this project, run:
+
+```bash
+./scripts/create_test_secrets.sh
+```
+
+All secrets are stored in the `./secrets` folder and _not_ version-controlled.
+
 ## Docker Commands
 
 ```bash

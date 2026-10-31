@@ -6,6 +6,7 @@ from os import PathLike
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 from songdb_server.api.lifespan import lifespan
 from songdb_server.api.routers import albums, artists, songs, users
@@ -32,6 +33,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(HTTPSRedirectMiddleware)
 
 app.include_router(albums.router)
 app.include_router(artists.router)

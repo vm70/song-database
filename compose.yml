@@ -24,6 +24,8 @@ x-services:
       - songdb-mariadb-password
       - songdb-auth-private-key
       - songdb-auth-public-key
+      - songdb-https-cert
+      - songdb-https-key
 
 services:
   mariadb:
@@ -53,6 +55,7 @@ services:
       SONGDB__SQL__HOST: mariadb
     ports:
       - 8000:8000
+    command: [ "uvicorn", "songdb_server.api.app:app", "--ssl-certfile", "/run/secrets/songdb-https-cert", "--ssl-keyfile", "/run/secrets/songdb-https-key", "--host", "0.0.0.0", "--port", "8000" ]
 
   test:
     <<: *songdb-server-common
@@ -90,3 +93,7 @@ secrets:
     file: ./secrets/songdb-mariadb-password
   songdb-mariadb-root-password:
     file: ./secrets/songdb-mariadb-root-password
+  songdb-https-cert:
+    file: ./secrets/cert.pem
+  songdb-https-key:
+    file: ./secrets/key.pem

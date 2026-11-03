@@ -12,9 +12,22 @@ from songdb_server.settings import SongDBSettings
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator:
-    """FastAPI application lifespan."""
-    app.state.settings = SongDBSettings()
+async def parameterized_lifespan(
+    app: FastAPI, settings: SongDBSettings | None = None
+) -> AsyncGenerator:
+    """Parameterized FastAPI lifespan.
+
+    Use this function as an input to `functools.partial` to apply a custom
+    settings configuration.
+
+    Args:
+        app: FastAPI App
+        settings: song database settings.
+
+    Yields:
+        None
+    """
+    app.state.settings = settings or SongDBSettings()
     app.state.oauth2_service = OAuth2Service(app.state.settings)
     app.state.engine = init_engine(app.state.settings)
 

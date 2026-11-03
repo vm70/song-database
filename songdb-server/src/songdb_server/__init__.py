@@ -5,7 +5,7 @@ from importlib.metadata import metadata
 
 import uvicorn
 
-from songdb_server.api.app import app, export_openapi_json
+from songdb_server.api.app import create_app, export_openapi_json
 
 __version__ = metadata("songdb-server")["Version"]
 
@@ -37,8 +37,9 @@ def main() -> None:
         print(__version__)
         return
 
+    app = create_app()
     if args.export is not None:
-        export_openapi_json(args.export)
+        export_openapi_json(app, args.export)
         return
 
     uvicorn.run(app, host="127.0.0.1")

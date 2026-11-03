@@ -1,6 +1,7 @@
 """FastAPI application."""
 
 import json
+from functools import partial
 from importlib.metadata import metadata
 from os import PathLike
 
@@ -8,40 +9,50 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 
-from songdb_server.api.lifespan import lifespan
+from songdb_server.api.lifespan import parameterized_lifespan
 from songdb_server.api.routers import albums, artists, songs, users
 from songdb_server.settings import SongDBSettings
 
-_settings = SongDBSettings()
 
-app = FastAPI(
-    title="Song Database API",
-    version=metadata("songdb-server")["Version"],
-    lifespan=lifespan,
-    openapi_url="/openapi.json" if _settings.API.SHOW_OPENAPI_JSON else None,
-    docs_url="/docs" if _settings.API.SHOW_DOCS else None,
-    redoc_url="/redoc" if _settings.API.SHOW_REDOC else None,
-)
+def create_app(settings: SongDBSettings | None = None) -> FastAPI:
+    """Create a new Song Database server application.
 
-del _settings
+    This is the factory function for the Song Database API server.
+
+    Args:
+        settings:
+            API settings. If none provided, settings are inferred from
+            environment variables.
+    """
+    settings = settings or SongDBSettings()
+
+    app = FastAPI(
+        title="Song Database API",
+        version=metadata("songdb-server")["Version"],
+        lifespan=partial(parameterized_lifespan, settings=settings),
+        openapi_url="/openapi.json" if settings.API.SHOW_OPENAPI_JSON else None,
+        docs_url="/docs" if settings.API.SHOW_DOCS else None,
+        redoc_url="/redoc" if settings.API.SHOW_REDOC else None,
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost", "http://localhost:8000"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    app.add_middleware(HTTPSRedirectMiddleware)
+
+    app.include_router(albums.router)
+    app.include_router(artists.router)
+    app.include_router(songs.router)
+    app.include_router(users.router)
+
+    return app
 
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost", "http://localhost:8000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.add_middleware(HTTPSRedirectMiddleware)
-
-app.include_router(albums.router)
-app.include_router(artists.router)
-app.include_router(songs.router)
-app.include_router(users.router)
-
-
-def export_openapi_json(path: PathLike) -> None:
+def export_openapi_json(app: FastAPI, path: PathLike) -> None:
     """Export the song database's OpenAPI JSON specification."""
     openapi_schema = app.openapi()
     with open(path, "w") as f:  # noqa: PTH123

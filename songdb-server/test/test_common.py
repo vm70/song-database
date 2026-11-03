@@ -7,7 +7,7 @@ from typing import Any
 from faker import Faker
 from fastapi import status
 from fastapi.testclient import TestClient
-from songdb_server.api.app import app
+from songdb_server.api.app import create_app
 from songdb_server.models.album import Album, AlbumCreateRequest
 from songdb_server.models.artist import Artist, ArtistCreateRequest
 from songdb_server.models.song import Song, SongCreateRequest
@@ -24,6 +24,7 @@ class SongDBTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the test case."""
+        app = create_app()
         cls.client = TestClient(app)
         cls.client.__enter__()
 

@@ -17,7 +17,7 @@ def fetch_secret(
     secret_file: FilePath | None,
     secret_env_name: str,
     secret_file_env_name: str,
-) -> SecretStr:
+) -> SecretStr | None:
     """Fetch a given secret's actual value.
 
     Args:
@@ -37,8 +37,12 @@ def fetch_secret(
         return SecretStr(secret_file.read_text().strip())
     if secret is not None:
         return secret
-    msg = f"Neither options {secret_env_name} nor {secret_file_env_name} were provided."
-    raise ValueError(msg)
+    logger.warning(
+        "Neither options %s nor %s were provided.",
+        secret_env_name,
+        secret_file_env_name,
+    )
+    return None
 
 
 class SQLSettings(BaseModel):

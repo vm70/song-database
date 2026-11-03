@@ -14,24 +14,18 @@ logger = logging.getLogger(__name__)
 
 def fetch_secret(
     secret: SecretStr | None,
-    secret_env_name: str,
     secret_file: FilePath | None,
+    secret_env_name: str,
     secret_file_env_name: str,
-) -> SecretStr | None:
+) -> SecretStr:
     """Fetch a given secret's actual value.
 
     Args:
         secret: secret string (or none)
-        secret_env_name: secret string environment variable name
         secret_file: secret file (or none)
+        secret_env_name: secret string environment variable name
         secret_file_env_name: secret file environment variable name
     """
-    if secret is None and secret_file is None:
-        logger.fatal(
-            "Neither options %s nor %s were provided.",
-            secret_env_name,
-            secret_file_env_name,
-        )
     if secret is not None and secret_file is not None:
         logger.warning(
             "Both options %s and %s were provided. Defaulting to %s",
@@ -41,7 +35,10 @@ def fetch_secret(
         )
     if secret_file is not None:
         return SecretStr(secret_file.read_text().strip())
-    return secret
+    if secret is not None:
+        return secret
+    msg = f"Neither options {secret_env_name} nor {secret_file_env_name} were provided."
+    raise ValueError(msg)
 
 
 class SQLSettings(BaseModel):
@@ -101,8 +98,8 @@ class SQLSettings(BaseModel):
         """Get The SQL password, if provided."""
         return fetch_secret(
             self.PASSWORD,
-            "SONGDB__SQL__PASSWORD",
             self.PASSWORD_FILE,
+            "SONGDB__SQL__PASSWORD",
             "SONGDB__SQL__PASSWORD_FILE",
         )
 
@@ -155,8 +152,8 @@ class AuthSettings(BaseModel):
         """Get the JWT private key, if available."""
         private_key = fetch_secret(
             self.JWT_PRIVATE_KEY,
-            "SONGDB__AUTH__JWT_PRIVATE_KEY",
             self.JWT_PRIVATE_KEY_FILE,
+            "SONGDB__AUTH__JWT_PRIVATE_KEY",
             "SONGDB__AUTH__JWT_PRIVATE_KEY_FILE",
         )
         if private_key is None:
@@ -168,8 +165,8 @@ class AuthSettings(BaseModel):
         """Get the JWT public key, if available."""
         public_key = fetch_secret(
             self.JWT_PUBLIC_KEY,
-            "SONGDB__AUTH__JWT_PUBLIC_KEY",
             self.JWT_PUBLIC_KEY_FILE,
+            "SONGDB__AUTH__JWT_PUBLIC_KEY",
             "SONGDB__AUTH__JWT_PUBLIC_KEY_FILE",
         )
         if public_key is None:

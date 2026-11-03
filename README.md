@@ -26,6 +26,7 @@ podman compose --profile test down
 ## Client Generation
 
 ```bash
+uv run songdb-server --export-openapi doc/generated/openapi.json
 uv run openapi-generator-cli generate /
     --input-spec doc/generated/openapi.json /
     --generator-name python /

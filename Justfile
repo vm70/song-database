@@ -14,6 +14,7 @@ test-containerized:
     docker compose --profile test up --build --abort-on-container-exit
     docker compose --profile test down --rmi local --volumes
 
+# Generate OpenAPI client
 generate-client:
     uv run songdb-server --export-openapi doc/generated/openapi.json
     uv run openapi-generator-cli generate --input-spec doc/generated/openapi.json --generator-name python --minimal-update --output songdb-client

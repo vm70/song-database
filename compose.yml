@@ -1,5 +1,4 @@
 x-services:
-
   mariadb-common: &mariadb-common
     image: mariadb
     secrets:
@@ -11,7 +10,7 @@ x-services:
       MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
       MARIADB_DATABASE: ${MARIADB_DATABASE}
     healthcheck:
-      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -30,7 +29,7 @@ x-services:
 services:
   mariadb:
     <<: *mariadb-common
-    profiles: [ "" ]
+    profiles: [""]
     volumes:
       - mariadb_data:/var/lib/mysql
     ports:
@@ -38,13 +37,13 @@ services:
 
   test-mariadb:
     <<: *mariadb-common
-    profiles: [ "test" ]
+    profiles: ["test"]
     tmpfs:
       - /var/lib/mysql
 
   songdb-server:
     <<: *songdb-server-common
-    profiles: [ "" ]
+    profiles: [""]
     build:
       context: ./songdb-server
       dockerfile: Dockerfile
@@ -55,11 +54,24 @@ services:
       SONGDB__SQL__HOST: mariadb
     ports:
       - 8000:8000
-    command: [ "uvicorn", "songdb_server.api.app:create_app", "--factory", "--ssl-certfile", "/run/secrets/songdb-https-cert", "--ssl-keyfile", "/run/secrets/songdb-https-key", "--host", "0.0.0.0", "--port", "8000" ]
+    command:
+      [
+        "uvicorn",
+        "songdb_server.api.app:create_app",
+        "--factory",
+        "--ssl-certfile",
+        "/run/secrets/songdb-https-cert",
+        "--ssl-keyfile",
+        "/run/secrets/songdb-https-key",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+      ]
 
   test:
     <<: *songdb-server-common
-    profiles: [ "test" ]
+    profiles: ["test"]
     build:
       context: ./songdb-server
       dockerfile: Dockerfile.test
@@ -71,7 +83,7 @@ services:
       SONGDB__SQL__HOST: test-mariadb
 
   adminer:
-    profiles: [ "", "debug" ]
+    profiles: ["", "debug"]
     image: adminer
     ports:
       - 8080:8080

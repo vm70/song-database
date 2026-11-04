@@ -13,6 +13,7 @@ test: test-local test-containerized
 format:
     uv run black .
     uv run ruff format .
+    prettier --write .
 
 # Perform linting & type checking
 lint:

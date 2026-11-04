@@ -46,5 +46,6 @@ test-containerized: generate-secrets
 
 # Generate Python OpenAPI client
 generate-client:
+    cp .env.local .env
     uv run songdb-server --export-openapi doc/generated/openapi.json
-    uv run openapi-generator-cli generate --input-spec doc/generate
+    uv run openapi-generator-cli generate --input-spec doc/generated/openapi.json --generator-name python --minimal-update --output songdb-client

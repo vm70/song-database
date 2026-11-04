@@ -20,7 +20,7 @@ lint:
     uv run pyrefly check .
 
 # Generate example secrets
-make-secrets:
+generate-secrets:
     # Generate MariaDB user password
     if [[ ! -f ./secrets/songdb-mariadb-password ]]; then openssl rand -base64 20 >./secrets/songdb-mariadb-password; fi
     # Generate MariaDB root password
@@ -34,13 +34,13 @@ make-secrets:
 
 # Run tests locally
 [group("test")]
-test-local: make-secrets
+test-local: generate-secrets
     cp .env.local .env
     uv run pytest .
 
 # Run tests in Podman / Docker
 [group("test")]
-test-containerized: make-secrets
+test-containerized: generate-secrets
     cp .env.example .env
     docker compose --profile test up --build --abort-on-container-exit
     docker compose --profile test down --rmi local --volumes

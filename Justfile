@@ -1,5 +1,7 @@
 #!/usr/bin/env just --justfile
 
+set shell := ["bash", "-c"]
+
 # Display help information
 default:
     @just --list
@@ -17,7 +19,7 @@ lint:
     uv run ruff check . --fix
     uv run pyrefly check .
 
-# Generate secrets
+# Generate example secrets
 make-secrets:
     # Generate MariaDB user password
     if [[ ! -f ./secrets/songdb-mariadb-password ]]; then openssl rand -base64 20 >./secrets/songdb-mariadb-password; fi
@@ -28,7 +30,7 @@ make-secrets:
     # Generate ES256 public key
     if [[ ! -f ./secrets/songdb-auth-public-key ]]; then openssl ec -in ./secrets/songdb-auth-private-key.pem -pubout -out ./secrets/songdb-auth-public-key.pem; fi
     # Generate HTTPS certificate
-    if [[ ! -f ./secrets/cert.pem ]] || [[ ! -f ./secrets/key.pem ]]; then openssl req -x509 -newkey rsa:4096 -nodes -out ./secrets/cert.pem -keyout ./secrets/key.pem -days 365; fi
+    if [[ ! -f ./secrets/cert.pem ]] || [[ ! -f ./secrets/key.pem ]]; then openssl req -x509 -newkey rsa:4096 -nodes -subj "/ST=./L=./O=./OU=./CN=." -out ./secrets/cert.pem -keyout ./secrets/key.pem -days 365; fi
 
 # Run tests locally
 [group("test")]

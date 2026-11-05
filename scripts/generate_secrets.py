@@ -188,5 +188,5 @@ if __name__ == "__main__":
         args.jwt_private_key_file, args.jwt_public_key_file, overwrite=args.overwrite
     )
     generate_self_signed_cert(
-        args.https_cert_file, args.https_key_file, overwrite=args.overwrite
+        args.https_key_file, args.https_cert_file, overwrite=args.overwrite
     )

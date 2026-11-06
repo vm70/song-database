@@ -9,6 +9,7 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
 COPY ./src .
 COPY ./pyproject.toml .
 RUN --mount=type=cache,target=/root/.cache/pip pip install .
+RUN chown -R songdb /opt/songdb-server
 
 USER songdb
 EXPOSE 8000
@@ -21,6 +22,7 @@ COPY ./test .
 COPY requirements.dev.txt .
 RUN --mount=type=cache,target=/home/songdb/.cache/pip pip install -r requirements.dev.txt
 RUN --mount=type=cache,target=/home/songdb/.cache/pip pip install .
+RUN chown -R songdb /opt/songdb-server
 
 USER songdb
 CMD [ "pytest", "." ]

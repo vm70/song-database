@@ -23,7 +23,7 @@ generate-secrets:
 # Run tests locally
 [group("test")]
 test-local: generate-secrets
-    cp .env.local .env
+    cp .env.example.local .env
     uv run pytest .
 
 # Run tests in Podman / Docker
@@ -35,7 +35,7 @@ test-containerized: generate-secrets
 
 # Generate Python OpenAPI client
 generate-client:
-    cp .env.local .env
+    cp .env.example.local .env
     uv run songdb-server --export-openapi doc/generated/openapi.json
     uv run openapi-generator-cli generate --input-spec doc/generated/openapi.json --generator-name python --minimal-update --output songdb-client
 

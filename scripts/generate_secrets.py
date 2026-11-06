@@ -146,37 +146,46 @@ def generate_self_signed_cert(
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        prog="secrets/generate_secrets.py",
+        description="Generate example secrets for the song database",
+    )
     parser.add_argument("-w", "--overwrite", action="store_true")
     parser.add_argument(
         "--mariadb-password-file",
         type=Path,
         default=Path("./secrets/songdb-mariadb-password"),
+        help="path to the MariaDB password file",
     )
     parser.add_argument(
         "--mariadb-root-password-file",
         type=Path,
         default=Path("./secrets/songdb-mariadb-root-password"),
+        help="path to the MariaDB root password file",
     )
     parser.add_argument(
         "--jwt-private-key-file",
         type=Path,
         default=Path("./secrets/songdb-auth-private-key.pem"),
+        help="path to the JWT private key file",
     )
     parser.add_argument(
         "--jwt-public-key-file",
         type=Path,
         default=Path("./secrets/songdb-auth-public-key.pem"),
+        help="path to the JWT public key file",
     )
     parser.add_argument(
         "--https-cert-file",
         type=Path,
         default=Path("./secrets/cert.pem"),
+        help="path to the HTTPS certificate",
     )
     parser.add_argument(
         "--https-key-file",
         type=Path,
         default=Path("./secrets/key.pem"),
+        help="path to the HTTPS private key",
     )
     args = parser.parse_args()
     generate_password(args.mariadb_password_file, overwrite=args.overwrite)

@@ -13,10 +13,12 @@ class TestSongDBKeyGen(unittest.TestCase):
 
     @unittest.skipIf(NO_OPENSSL, "No OpenSSL implementation to generate keys")
     def test_openssl_es256(self) -> None:
+        """Test generating keys with OpenSSL."""
         private_key_str, public_key_str = openssl_es256()
         verify_keys(private_key_str, public_key_str)
 
     def test_cryptography_es256(self) -> None:
+        """Test generating keys with cryptography."""
         private_key_str, public_key_str = cryptography_hazmat_es256()
         verify_keys(private_key_str, public_key_str)
 

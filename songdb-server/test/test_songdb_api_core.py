@@ -32,10 +32,12 @@ class TestSongDBApiCore(unittest.TestCase):
             )
         )
 
-    def verify_visibility(self, url: str):
+    def verify_visibility(self, url: str) -> None:
+        """Verify whether a URL is visible based on settings."""
         for app, code in zip(
             (self.hidden_app, self.visible_app),
             (status.HTTP_404_NOT_FOUND, status.HTTP_200_OK),
+            strict=True,
         ):
             with self.subTest(app=app, code=code), TestClient(app) as client:
                 response = client.get(url)

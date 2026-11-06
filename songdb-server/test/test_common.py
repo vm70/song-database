@@ -77,7 +77,8 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
         cls.login_as_new_user()
 
     @classmethod
-    def login_as_new_user(cls):
+    def login_as_new_user(cls) -> None:
+        """Log in as a new user."""
         user = UserCreateRequest(
             username=cls.fake.user_name(), password=cls.fake.password()
         )
@@ -85,7 +86,7 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
         if response.status_code not in (status.HTTP_200_OK, status.HTTP_409_CONFLICT):
             msg = (
                 f"Could not create test user {user.username} for unit tests."
-                + f"Error {response.status_code}: {response.json()}"
+                f"Error {response.status_code}: {response.json()}"
             )
             raise RuntimeError(msg)
 
@@ -104,6 +105,7 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
         cls.client.headers = {"Authorization": f"Bearer {cls.token.access_token}"}
 
     def new_artist(self) -> Artist:
+        """Create a new artist."""
         return self.validate_api_call(
             "post",
             "/artists",
@@ -113,6 +115,7 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
         )
 
     def new_album(self, artist: Artist | None = None) -> Album:
+        """Create a new album."""
         artist = artist or self.new_artist()
         return self.validate_api_call(
             "post",
@@ -129,6 +132,7 @@ class AuthenticatedSongDBTestCase(SongDBTestCase):
     def new_song(
         self, artist: Artist | None = None, album: Album | None = None
     ) -> Song:
+        """Create a new song."""
         artist = artist or self.new_artist()
         album = album or self.new_album()
         return self.validate_api_call(

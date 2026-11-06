@@ -16,6 +16,7 @@ class TestSongDBArtist(AuthenticatedSongDBTestCase):
     artist: Artist
 
     def setUp(self) -> None:
+        """Set up the tests."""
         self.artist = self.new_artist()
 
     def test_get_artist(self) -> None:

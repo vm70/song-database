@@ -23,6 +23,7 @@ class TestSongDBOAuth2Service(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Tear down this class."""
         if cls.engine is not None:
             cls.engine.dispose()
 

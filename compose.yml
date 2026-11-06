@@ -1,0 +1,57 @@
+services:
+
+  mariadb:
+    image: mariadb
+    secrets:
+      - songdb-mariadb-password
+      - songdb-mariadb-root-password
+    environment:
+      MARIADB_USER: ${SONGDB__SQL__USERNAME}
+      MARIADB_PASSWORD_FILE: /run/secrets/songdb-mariadb-password
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
+      MARIADB_DATABASE: ${SONGDB__SQL__DATABASE}
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  songdb-server:
+    build:
+      context: ./songdb-server
+      dockerfile: Dockerfile
+      target: base
+    env_file:
+      - .env
+    secrets:
+      - songdb-mariadb-password
+      - songdb-auth-private-key
+      - songdb-auth-public-key
+      - songdb-https-cert
+      - songdb-https-key
+
+  adminer:
+    profiles: [ "dev" ]
+    image: adminer
+    ports:
+      - 8080:8080
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
+
+secrets:
+  songdb-auth-private-key:
+    file: ./secrets/songdb-auth-private-key.pem
+  songdb-auth-public-key:
+    file: ./secrets/songdb-auth-public-key.pem
+  songdb-mariadb-password:
+    file: ./secrets/songdb-mariadb-password
+  songdb-mariadb-root-password:
+    file: ./secrets/songdb-mariadb-root-password
+  songdb-https-cert:
+    file: ./secrets/cert.pem
+  songdb-https-key:
+    file: ./secrets/key.pem

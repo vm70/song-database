@@ -30,8 +30,10 @@ test-local: generate-secrets
 [group("test")]
 test-containerized: generate-secrets
     cp .env.example .env
-    docker compose --profile test up --build --abort-on-container-exit
-    docker compose --profile test down --rmi local --volumes
+    docker compose --file compose.yml --file compose.test.yml run --build --rm songdb-server
+    docker compose --file compose.yml --file compose.test.yml down --rmi local --volumes
+    docker compose --file compose.yml --file compose.prod.yml up --detach
+    docker compose --file compose.yml --file compose.prod.yml down
 
 # Generate Python OpenAPI client
 generate-client:

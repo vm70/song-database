@@ -1,0 +1,19 @@
+services:
+
+  mariadb:
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+
+  songdb-server:
+    depends_on:
+      mariadb:
+        restart: true
+        condition: service_healthy
+    ports:
+      - 8000:8000
+    command: [ "uvicorn", "songdb_server.api.app:create_app", "--factory", "--ssl-certfile", "/run/secrets/songdb-https-cert", "--ssl-keyfile", "/run/secrets/songdb-https-key", "--host", "0.0.0.0", "--port", "8000" ]
+
+volumes:
+  mariadb_data:

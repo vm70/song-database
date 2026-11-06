@@ -23,6 +23,9 @@ services:
       target: base
     env_file:
       - .env
+    environment:
+      UVICORN_SSL_CERTFILE: /run/secrets/https-cert
+      UVICORN_SSL_KEYFILE: /run/secrets/https-key
     secrets:
       - https-cert
       - https-key

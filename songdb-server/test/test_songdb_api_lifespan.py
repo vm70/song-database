@@ -3,7 +3,7 @@
 import unittest
 
 from fastapi.testclient import TestClient
-from songdb_server import create_app
+from songdb_server.api.app import create_app
 from songdb_server.settings import SongDBSettings, SQLSettings
 from sqlalchemy.exc import OperationalError
 

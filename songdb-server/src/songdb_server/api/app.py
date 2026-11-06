@@ -3,7 +3,7 @@
 import json
 from functools import partial
 from importlib.metadata import metadata
-from os import PathLike
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,8 +52,9 @@ def create_app(settings: SongDBSettings | None = None) -> FastAPI:
     return app
 
 
-def export_openapi_json(app: FastAPI, path: PathLike) -> None:
+def export_openapi_json(path: Path) -> None:
     """Export the song database's OpenAPI JSON specification."""
+    app = create_app()
     openapi_schema = app.openapi()
-    with open(path, "w") as f:  # noqa: PTH123
+    with path.open("w") as f:
         json.dump(openapi_schema, f, indent=4)

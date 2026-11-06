@@ -4,7 +4,7 @@ import unittest
 
 from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
-from songdb_server import create_app
+from songdb_server.api.app import create_app
 from songdb_server.settings import ApiSettings, SongDBSettings
 
 _settings = SongDBSettings()

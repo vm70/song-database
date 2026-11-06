@@ -1,20 +1,10 @@
+name: song-database-test
 services:
-  test-mariadb:
-    extends:
-      file: compose.yml
-      service: mariadb
+  mariadb:
     tmpfs:
       - /var/lib/mysql
-
   songdb-server:
-    container_name: songdb-server-test
     build:
       context: ./songdb-server
       dockerfile: Dockerfile
       target: test
-    depends_on:
-      test-mariadb:
-        restart: true
-        condition: service_healthy
-    environment:
-      SONGDB__SQL__HOST: test-mariadb

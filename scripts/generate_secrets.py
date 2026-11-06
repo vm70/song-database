@@ -154,37 +154,37 @@ if __name__ == "__main__":
     parser.add_argument(
         "--mariadb-password-file",
         type=Path,
-        default=Path("./secrets/songdb-mariadb-password"),
+        default=Path("./secrets/mariadb-password.txt"),
         help="path to the MariaDB password file",
     )
     parser.add_argument(
         "--mariadb-root-password-file",
         type=Path,
-        default=Path("./secrets/songdb-mariadb-root-password"),
+        default=Path("./secrets/mariadb-root-password.txt"),
         help="path to the MariaDB root password file",
     )
     parser.add_argument(
         "--jwt-private-key-file",
         type=Path,
-        default=Path("./secrets/songdb-auth-private-key.pem"),
+        default=Path("./secrets/jwt-private-key.pem"),
         help="path to the JWT private key file",
     )
     parser.add_argument(
         "--jwt-public-key-file",
         type=Path,
-        default=Path("./secrets/songdb-auth-public-key.pem"),
+        default=Path("./secrets/jwt-public-key.pem"),
         help="path to the JWT public key file",
     )
     parser.add_argument(
         "--https-cert-file",
         type=Path,
-        default=Path("./secrets/cert.pem"),
+        default=Path("./secrets/https-cert.pem"),
         help="path to the HTTPS certificate",
     )
     parser.add_argument(
         "--https-key-file",
         type=Path,
-        default=Path("./secrets/key.pem"),
+        default=Path("./secrets/https-key.pem"),
         help="path to the HTTPS private key",
     )
     args = parser.parse_args()

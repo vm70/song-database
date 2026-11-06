@@ -1,9 +1,10 @@
+name: song-database
 services:
   mariadb:
     image: mariadb
     secrets:
-      - songdb-mariadb-password
-      - songdb-mariadb-root-password
+      - mariadb-password
+      - mariadb-root-password
     environment:
       MARIADB_USER: ${SONGDB__SQL__USERNAME}
       MARIADB_PASSWORD_FILE: /run/secrets/songdb-mariadb-password
@@ -15,7 +16,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
-
   songdb-server:
     build:
       context: ./songdb-server
@@ -24,12 +24,15 @@ services:
     env_file:
       - .env
     secrets:
-      - songdb-mariadb-password
-      - songdb-auth-private-key
-      - songdb-auth-public-key
-      - songdb-https-cert
-      - songdb-https-key
-
+      - https-cert
+      - https-key
+      - jwt-private-key
+      - jwt-public-key
+      - mariadb-password
+    depends_on:
+      mariadb:
+        restart: true
+        condition: service_healthy
   adminer:
     profiles: ["dev"]
     image: adminer
@@ -40,17 +43,16 @@ services:
         condition: service_healthy
     environment:
       ADMINER_DEFAULT_SERVER: mariadb
-
 secrets:
-  songdb-auth-private-key:
-    file: ./secrets/songdb-auth-private-key.pem
-  songdb-auth-public-key:
-    file: ./secrets/songdb-auth-public-key.pem
-  songdb-mariadb-password:
-    file: ./secrets/songdb-mariadb-password
-  songdb-mariadb-root-password:
-    file: ./secrets/songdb-mariadb-root-password
-  songdb-https-cert:
-    file: ./secrets/cert.pem
-  songdb-https-key:
-    file: ./secrets/key.pem
+  https-cert:
+    file: ./secrets/https-cert.pem
+  https-key:
+    file: ./secrets/https-key.pem
+  jwt-private-key:
+    file: ./secrets/jwt-private-key.pem
+  jwt-public-key:
+    file: ./secrets/jwt-public-key.pem
+  mariadb-password:
+    file: ./secrets/mariadb-password.txt
+  mariadb-root-password:
+    file: ./secrets/mariadb-root-password.txt

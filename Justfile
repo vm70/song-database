@@ -42,3 +42,9 @@ generate-client:
 run: generate-secrets
     cp .env.example .env
     docker compose --file compose.yml --file compose.prod.yml --profile dev up --build
+
+clean:
+    cp .env.example .env
+    docker compose --file compose.yml --file compose.prod.yml down --rmi local --volumes
+    docker compose --file compose.yml --file compose.test.yml down --rmi local --volumes
+    git clean -fdx

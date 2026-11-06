@@ -1,3 +1,5 @@
+"""Common functionalities across routers."""
+
 from collections.abc import Sequence
 from uuid import UUID
 

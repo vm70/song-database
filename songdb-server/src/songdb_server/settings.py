@@ -7,7 +7,7 @@ import sqlalchemy
 from pydantic import AnyUrl, BaseModel, Field, FilePath, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from songdb_server.keygen import verify_keys
+from songdb_server.keygen import generate_es256_keys, verify_keys
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +88,7 @@ class SQLSettings(BaseModel):
         """Use the override URL."""
         if self.URL_OVERRIDE is not None:
             url = sqlalchemy.make_url(str(self.URL_OVERRIDE))
+            logger.warning("Using URL override for SQL settings: %s", url)
             self.DRIVERNAME = url.drivername
             self.USERNAME = url.username
             self.PASSWORD = SecretStr(url.password) if url.password else None
@@ -181,8 +182,15 @@ class AuthSettings(BaseModel):
     @model_validator(mode="after")
     def verify_jwt_keys(self) -> Self:
         """Verify JWT secrets work."""
-        private_key = self.fetch_jwt_private_key()
-        public_key = self.fetch_jwt_public_key()
+        try:
+            private_key = self.fetch_jwt_private_key()
+            public_key = self.fetch_jwt_public_key()
+        except ValueError as e:
+            logger.warning("Value error when fetching JWT keys: %s", e)
+            logger.warning("Generating backup ES256 key pair instead.")
+            self.JWT_PRIVATE_KEY, self.JWT_PUBLIC_KEY = generate_es256_keys()
+            private_key = self.JWT_PRIVATE_KEY
+            public_key = self.JWT_PUBLIC_KEY
         verify_keys(
             private_key.get_secret_value(),
             public_key.get_secret_value(),

@@ -1,10 +1,6 @@
 """Key generation."""
 
-# ruff: noqa: S603
-
 import logging
-import shutil
-import subprocess
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -12,12 +8,17 @@ from cryptography.hazmat.primitives.asymmetric.ec import (
     EllipticCurvePrivateKey,
     EllipticCurvePublicKey,
 )
+from pydantic import SecretStr
 
 logger = logging.getLogger(__name__)
 
 
-def cryptography_hazmat_es256() -> tuple[str, str]:
-    """Generate an ES256 key pair using `cryptography.hazmat`."""
+def generate_es256_keys() -> tuple[SecretStr, SecretStr]:
+    """Generate an ES256 key pair.
+
+    Returns:
+        tuple of PEM files: private key & public key
+    """
     private_key = ec.generate_private_key(ec.SECP256R1())
     public_key = private_key.public_key()
 
@@ -31,52 +32,10 @@ def cryptography_hazmat_es256() -> tuple[str, str]:
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
 
-    return private_bytes.decode("utf8"), public_bytes.decode("utf8")
-
-
-def openssl_es256() -> tuple[str, str]:
-    """Generate an ES256 key pair using OpenSSL."""
-    openssl_path = shutil.which("openssl")
-    if openssl_path is None:
-        msg = "OpenSSL is not installed"
-        raise FileNotFoundError(msg)
-    private_key = subprocess.run(
-        [
-            openssl_path,
-            "ecparam",
-            "-name",
-            "prime256v1",
-            "-genkey",
-            "-noout",
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
-    public_key = subprocess.run(
-        [
-            openssl_path,
-            "ec",
-            "-pubout",
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-        input=private_key,
-    ).stdout
-    return private_key, public_key
-
-
-def generate_es256_key_pair() -> tuple[str, str]:
-    """Generate an ES256 key pair."""
-    try:
-        return openssl_es256()
-    except FileNotFoundError:
-        logger.warning(
-            "Could not find OpenSSL for key generation, "
-            "Using cryptography.hazmat as fallback"
-        )
-    return cryptography_hazmat_es256()
+    return (
+        SecretStr(private_bytes.decode("utf8")),
+        SecretStr(public_bytes.decode("utf8")),
+    )
 
 
 def verify_keys(private_key: str, public_key: str) -> None:

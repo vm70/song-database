@@ -39,7 +39,7 @@ repos:
       # Pyrefly type checking has to be done locally since it has trouble with UV workspaces
       - id: pyrefly-check
         name: Pyrefly (type checking)
-        entry: pyrefly check .
+        entry: uv run pyrefly check .
         language: system
         types: [python]
         pass_filenames: false

@@ -1,5 +1,4 @@
 services:
-
   mariadb:
     image: mariadb
     secrets:
@@ -11,7 +10,7 @@ services:
       MARIADB_ROOT_PASSWORD_FILE: /run/secrets/songdb-mariadb-root-password
       MARIADB_DATABASE: ${SONGDB__SQL__DATABASE}
     healthcheck:
-      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -32,7 +31,7 @@ services:
       - songdb-https-key
 
   adminer:
-    profiles: [ "dev" ]
+    profiles: ["dev"]
     image: adminer
     ports:
       - 8080:8080

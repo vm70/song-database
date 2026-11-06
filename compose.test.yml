@@ -1,5 +1,4 @@
 services:
-
   test-mariadb:
     extends:
       file: compose.yml

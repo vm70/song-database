@@ -5,6 +5,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from jwt import InvalidTokenError
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import select
+
 from songdb_server.api.services.authentication import (
     OAuth2BearerDep,
     OAuth2ServiceDep,
@@ -16,8 +19,6 @@ from songdb_server.models.user import (
     UserCreateRequest,
     UserResponse,
 )
-from sqlalchemy.exc import IntegrityError
-from sqlmodel import select
 
 router = APIRouter(prefix="/users", tags=["users"])
 

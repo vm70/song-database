@@ -5,10 +5,11 @@ from collections.abc import Generator
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
-from songdb_server.settings import SongDBSettings
 from sqlalchemy import Engine
 from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, SQLModel, create_engine
+
+from songdb_server.settings import SongDBSettings
 
 logger = logging.getLogger(__name__)
 

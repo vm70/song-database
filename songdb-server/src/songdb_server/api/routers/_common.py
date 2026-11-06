@@ -4,9 +4,10 @@ from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from sqlmodel import SQLModel, select
+
 from songdb_server.api.services.database import SessionDep
 from songdb_server.models._common import SongDBEntry
-from sqlmodel import SQLModel, select
 
 
 def get_item[I: SongDBEntry](

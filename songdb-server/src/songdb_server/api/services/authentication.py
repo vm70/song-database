@@ -8,6 +8,7 @@ from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
+
 from songdb_server.models.user import User
 from songdb_server.settings import SongDBSettings
 

@@ -1,6 +1,8 @@
 """Key generation."""
 
 import logging
+import ssl
+from pathlib import Path
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -64,3 +66,9 @@ def verify_es256_keys(private_key: str, public_key: str) -> None:
     ):
         msg = "Public key & private key don't match"
         raise ValueError(msg)
+
+
+def verify_https_certs(certfile: Path, keyfile: Path) -> None:
+    """Verify a pair of HTTPS certificate files."""
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(certfile=certfile, keyfile=keyfile)

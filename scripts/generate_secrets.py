@@ -48,10 +48,7 @@ def generate_password(
     print(f"Writing password file to {password_file}")
 
     password = "".join(
-        [
-            secrets.choice(string.ascii_letters + string.digits + string.punctuation)
-            for _ in range(length)
-        ]
+        [secrets.choice(string.ascii_letters + string.digits) for _ in range(length)]
     )
     password_file.parent.mkdir(parents=True, exist_ok=True)
     password_file.write_text(password)

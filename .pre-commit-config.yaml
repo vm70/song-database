@@ -21,6 +21,8 @@ repos:
             --output-file,
             songdb-server/requirements.txt,
           ]
+        files: ^(pyproject\.toml)$
+
       - id: pip-compile
         name: UV pip-compile (development)
         args:
@@ -30,6 +32,7 @@ repos:
             --output-file,
             songdb-server/requirements.dev.txt,
           ]
+        files: ^(pyproject\.toml)$
 
   - repo: local
     hooks:

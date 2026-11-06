@@ -82,6 +82,8 @@ class SQLSettings(BaseModel):
     If this is provided, then all other settings values (except for
     CONNECT_ARGS) will be overwritten and auto-populated.
     """
+    QUIT_ON_FAILURE: bool = False
+    """Whether to immediately quit if no database connection can be established."""
 
     @model_validator(mode="after")
     def use_override_url(self) -> Self:

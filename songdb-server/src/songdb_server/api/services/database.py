@@ -23,7 +23,9 @@ def init_engine(settings: SongDBSettings) -> Engine | None:
         SQLModel.metadata.create_all(engine)
         return engine
     except OperationalError as e:
-        logger.warning(e)
+        logger.fatal(e)
+        if settings.SQL.QUIT_ON_FAILURE:
+            raise e
         return None
 
 

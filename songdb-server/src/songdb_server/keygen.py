@@ -38,7 +38,7 @@ def generate_es256_keys() -> tuple[SecretStr, SecretStr]:
     )
 
 
-def verify_keys(private_key: str, public_key: str) -> None:
+def verify_es256_keys(private_key: str, public_key: str) -> None:
     """Verify that a pair of keys for ES256 works.
 
     Raises:

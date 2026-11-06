@@ -3,7 +3,7 @@
 import shutil
 import unittest
 
-from songdb_server.keygen import generate_es256_keys, verify_keys
+from songdb_server.keygen import generate_es256_keys, verify_es256_keys
 
 NO_OPENSSL = shutil.which("openssl") is None
 
@@ -14,7 +14,7 @@ class TestSongDBKeyGen(unittest.TestCase):
     def test_generate_es256_keys(self) -> None:
         """Test generating ES256 key pairs."""
         private_key_str, public_key_str = generate_es256_keys()
-        verify_keys(
+        verify_es256_keys(
             private_key_str.get_secret_value(), public_key_str.get_secret_value()
         )
 

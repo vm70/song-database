@@ -7,7 +7,7 @@ import sqlalchemy
 from pydantic import AnyUrl, BaseModel, Field, FilePath, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from songdb_server.keygen import generate_es256_keys, verify_keys
+from songdb_server.keygen import generate_es256_keys, verify_es256_keys
 
 logger = logging.getLogger(__name__)
 
@@ -191,7 +191,7 @@ class AuthSettings(BaseModel):
             self.JWT_PRIVATE_KEY, self.JWT_PUBLIC_KEY = generate_es256_keys()
             private_key = self.JWT_PRIVATE_KEY
             public_key = self.JWT_PUBLIC_KEY
-        verify_keys(
+        verify_es256_keys(
             private_key.get_secret_value(),
             public_key.get_secret_value(),
         )

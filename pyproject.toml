@@ -63,3 +63,4 @@ convention = "google"
 
 [tool.pyrefly]
 project-includes = ["**/*.py*", "**/*.ipynb"]
+project-excludes = ["songdb-client/*"]

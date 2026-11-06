@@ -5,32 +5,26 @@ This is a simple test application that I'm making to teach myself a proper struc
 > [!WARNING]  
 > This is a toy example, so it's probably not safe for production use. If you want to spin up your own pre-made production application, take a look at the [full-stack FastAPI template](https://github.com/fastapi/full-stack-fastapi-template).
 
-## Secrets Generation
+This project uses `just` as a script runner.
 
-To generate the secrets required to run this project, run:
+## Running the Song Database
 
 ```bash
-./scripts/create_test_secrets.sh
+just run
 ```
 
-All secrets are stored in the `./secrets` folder and _not_ version-controlled.
+## Running Unit Tests
 
-## Docker Commands
+Unit tests should work in both containerized and non-containerized environments.
 
 ```bash
-# Run unit tests in Podman Compose
-podman compose --profile test up --abort-on-container-exit
-podman compose --profile test down
+just test
 ```
 
-## Client Generation
+## Generating OpenAPI Client
+
+This project will automatically generate an OpenAPI client.
 
 ```bash
-uv run songdb-server --export-openapi doc/generated/openapi.json
-uv run openapi-generator-cli generate /
-    --input-spec doc/generated/openapi.json /
-    --generator-name python /
-    --minimal-update /
-    --output /
-    songdb-client
+just generate-openapi-client
 ```
